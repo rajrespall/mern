@@ -1,45 +1,26 @@
 import mongoose from "mongoose"
 
-const ProductSchema = new mongoose.Schema(
-  {
-    name: { 
-        type: String, 
-        required: true 
+const ProductSchema = new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    price: { 
-        type: Number, 
-        required: true 
+    description: {
+      type: String,
+      required: true,
     },
-    rating: {
-        type: Number, 
-        default: 0, 
-        min: 0, 
-        max: 5 
+    price: {
+      type: Number,
+      required: true,
     },
-    description: { 
-        type: String, 
-        required: true 
+    image: {
+      type: String,
+      required: true,
     },
-    inStock: { 
-        type: Boolean, 
-        default: false 
+    cloudinary_id: {
+      type: String,
     },
-    stockQuantity: { 
-        type: Number, 
-        default: 0 
-    },
-    category: { 
-        type: String, 
-        required: true 
-    },
-    imageUrl: String,
-    imagePublicId: String, 
-  },{ timestamps: true }
-);
-
-ProductSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+  }, { timestamps: true });
 
 export const Product = mongoose.model("Product", ProductSchema);
