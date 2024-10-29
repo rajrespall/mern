@@ -13,11 +13,19 @@ export const useAuthStore = create((set) => ({
 	isCheckingAuth: true,
 	message: null,
 
+	// Determine user role: 'admin' or 'customer' or null if not authenticated
+	role: null, 
+
 	signup: async (email, password, name) => {
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/signup`, { email, password, name });
-			set({ user: response.data.user, isAuthenticated: true, isLoading: false });
+			set({ 
+				user: response.data.user, 
+				isAuthenticated: true, 
+				role: response.data.user.role, // Set role after signup
+				isLoading: false 
+			});
 		} catch (error) {
 			set({ error: error.response.data.message || "Error signing up", isLoading: false });
 			throw error;
@@ -30,6 +38,7 @@ export const useAuthStore = create((set) => ({
 			set({
 				isAuthenticated: true,
 				user: response.data.user,
+				role: response.data.user.role, // Set role after login
 				error: null,
 				isLoading: false,
 			});
@@ -43,7 +52,7 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			await axios.post(`${API_URL}/logout`);
-			set({ user: null, isAuthenticated: false, error: null, isLoading: false });
+			set({ user: null, isAuthenticated: false, role: null, error: null, isLoading: false }); // Reset role
 		} catch (error) {
 			set({ error: "Error logging out", isLoading: false });
 			throw error;
@@ -53,7 +62,12 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/verify-email`, { code });
-			set({ user: response.data.user, isAuthenticated: true, isLoading: false });
+			set({ 
+				user: response.data.user, 
+				isAuthenticated: true, 
+				role: response.data.user.role, // Set role after email verification
+				isLoading: false 
+			});
 			return response.data;
 		} catch (error) {
 			set({ error: error.response.data.message || "Error verifying email", isLoading: false });
@@ -64,9 +78,14 @@ export const useAuthStore = create((set) => ({
 		set({ isCheckingAuth: true, error: null });
 		try {
 			const response = await axios.get(`${API_URL}/check-auth`);
-			set({ user: response.data.user, isAuthenticated: true, isCheckingAuth: false });
+			set({ 
+				user: response.data.user, 
+				isAuthenticated: true, 
+				role: response.data.user.role, // Set role on authentication check
+				isCheckingAuth: false 
+			});
 		} catch (error) {
-			set({ error: null, isCheckingAuth: false, isAuthenticated: false });
+			set({ error: null, isCheckingAuth: false, isAuthenticated: false, role: null }); // Reset role if not authenticated
 		}
 	},
 	forgotPassword: async (email) => {

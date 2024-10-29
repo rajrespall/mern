@@ -5,6 +5,8 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import DashboardPage from "./pages/DashboardPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import CustomerDashboardPage from "./pages/CustomerDashboardPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
@@ -14,9 +16,10 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 
-// protect routes that require authentication
-const ProtectedRoute = ({ children }) => {
-	const { isAuthenticated, user } = useAuthStore();
+const ProtectedRoute = ({ children, role }) => {
+	const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
+
+	if (isCheckingAuth) return <LoadingSpinner />;
 
 	if (!isAuthenticated) {
 		return <Navigate to='/login' replace />;
@@ -26,15 +29,23 @@ const ProtectedRoute = ({ children }) => {
 		return <Navigate to='/verify-email' replace />;
 	}
 
+	if (role && user.role !== role) {
+		return <Navigate to='/' replace />;
+	}
+
 	return children;
 };
 
-// redirect authenticated users to the home page
 const RedirectAuthenticatedUser = ({ children }) => {
-	const { isAuthenticated, user } = useAuthStore();
+	const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
+
+	if (isCheckingAuth) return <LoadingSpinner />;
 
 	if (isAuthenticated && user.isVerified) {
-		return <Navigate to='/' replace />;
+		if (user.role === "admin") {
+			return <Navigate to='/admin-dashboard' replace />;
+		}
+		return <Navigate to='/customer-dashboard' replace />;
 	}
 
 	return children;
@@ -67,6 +78,25 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
+				{/* Admin-specific route */}
+				<Route
+					path='/admin-dashboard'
+					element={
+						<ProtectedRoute role="admin">
+							<AdminDashboardPage />
+						</ProtectedRoute>
+					}
+				/>
+				{/* Customer-specific route */}
+				<Route
+					path='/customer-dashboard'
+					element={
+						<ProtectedRoute role="customer">
+							<CustomerDashboardPage />
+						</ProtectedRoute>
+					}
+				/>
+
 				<Route
 					path='/signup'
 					element={
@@ -92,7 +122,6 @@ function App() {
 						</RedirectAuthenticatedUser>
 					}
 				/>
-
 				<Route
 					path='/reset-password/:token'
 					element={
@@ -101,6 +130,7 @@ function App() {
 						</RedirectAuthenticatedUser>
 					}
 				/>
+
 				{/* catch all routes */}
 				<Route path='*' element={<Navigate to='/' replace />} />
 			</Routes>

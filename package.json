@@ -2,9 +2,9 @@
   "name": "mern",
   "version": "1.0.0",
   "description": "",
-  "main": "backend/index.js",
+  "main": "backend/server.js",
   "scripts": {
-    "dev": "nodemon backend/index.js"
+    "dev": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",
