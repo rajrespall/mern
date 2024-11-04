@@ -14,17 +14,17 @@ export const useAuthStore = create((set) => ({
 	message: null,
 
 	// Determine user role: 'admin' or 'customer' or null if not authenticated
-	role: null, 
+	role: null,
 
 	signup: async (email, password, name) => {
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/signup`, { email, password, name });
-			set({ 
-				user: response.data.user, 
-				isAuthenticated: true, 
+			set({
+				user: response.data.user,
+				isAuthenticated: true,
 				role: response.data.user.role, // Set role after signup
-				isLoading: false 
+				isLoading: false
 			});
 		} catch (error) {
 			set({ error: error.response.data.message || "Error signing up", isLoading: false });
@@ -62,11 +62,11 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axios.post(`${API_URL}/verify-email`, { code });
-			set({ 
-				user: response.data.user, 
-				isAuthenticated: true, 
+			set({
+				user: response.data.user,
+				isAuthenticated: true,
 				role: response.data.user.role, // Set role after email verification
-				isLoading: false 
+				isLoading: false
 			});
 			return response.data;
 		} catch (error) {
@@ -74,20 +74,30 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+	
 	checkAuth: async () => {
 		set({ isCheckingAuth: true, error: null });
 		try {
 			const response = await axios.get(`${API_URL}/check-auth`);
-			set({ 
-				user: response.data.user, 
-				isAuthenticated: true, 
-				role: response.data.user.role, // Set role on authentication check
-				isCheckingAuth: false 
+			const user = response.data.user;
+			const isAuthenticated = true;
+
+			// Log the authentication and verification status
+			console.log("isAuthenticated:", isAuthenticated);
+			console.log("isVerified:", user?.isVerified);
+
+			set({
+				user: user,
+				isAuthenticated: isAuthenticated,
+				role: user.role, // Set role on authentication check
+				isCheckingAuth: false
 			});
 		} catch (error) {
-			set({ error: null, isCheckingAuth: false, isAuthenticated: false, role: null }); // Reset role if not authenticated
+			set({ error: null, isCheckingAuth: false, isAuthenticated: false, role: null });
 		}
 	},
+
+
 	forgotPassword: async (email) => {
 		set({ isLoading: true, error: null });
 		try {
