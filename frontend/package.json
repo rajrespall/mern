@@ -18,11 +18,13 @@
     "auth-tutorial": "file:..",
     "axios": "^1.7.3",
     "framer-motion": "^11.3.21",
+    "jspdf": "^2.5.2",
     "lucide-react": "^0.424.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.26.0",
+    "xlsx": "^0.18.5",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
