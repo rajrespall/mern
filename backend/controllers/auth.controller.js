@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+import admin from "../utils/firebase.js";
 import { generateTokenandSetCookie } from "../utils/generateTokenandSetCookie.js";
 import { sendVerificationEmail, SendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
 
@@ -163,6 +164,20 @@ export const resetPassword = async (req, res) => {
 
     } catch (error) {
         console.log("error in resetPassword", error);
+        res.status(400).json({success: false, message: error.message});
+    }
+}
+export const googleLogin = async (req, res) => {
+    const { idToken } = req.body;
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { uid, email } = decodedToken;
+        const token = jwt.sign({uid}, process.env.JWT_SECRET, {expiresIn: "7d"});
+
+        res.json({token, email});
+    }catch(error) {
+        console.log("error in googleLogin", error);
         res.status(400).json({success: false, message: error.message});
     }
 }

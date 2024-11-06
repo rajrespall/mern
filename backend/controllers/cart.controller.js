@@ -31,7 +31,7 @@ export const addToCart = async (req, res) => {
 
 // Get user's cart
 export const getCart = async (req, res) => {
-    const cart = await Cart.findOne({ user: req.userId }).populate('cartItems.product', 'name price image');
+    const cart = await Cart.findOne({ user: req.userId }).populate('cartItems.product', 'name price images');
 
     if (cart) {
         const cartWithTotalPrice = cart.cartItems.map(item => ({
