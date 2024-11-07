@@ -1,111 +1,152 @@
 import React, { useState, useEffect } from "react";
-import { IconButton, Select, MenuItem, InputLabel, FormControl } from "@mui/material";
+import { IconButton, Select, MenuItem, InputLabel, FormControl, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Grid } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 const EditDrinks = ({ isOpen, onClose, drink }) => {
   const [drinkName, setDrinkName] = useState("");
-  const [origin, setOrigin] = useState(""); // Changed from category to origin
+  const [origin, setOrigin] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
 
   useEffect(() => {
     if (drink) {
-      setDrinkName(drink.name || ""); // Provide a default value
-      setOrigin(drink.origin || ""); // Set origin from the drink object
-      setPrice(drink.price || ""); // Provide a default value
-      setStock(drink.stock || ""); // Provide a default value
-      setImages(drink.image || []); // Default to an empty array if no images
+      setDrinkName(drink.name || "");
+      setOrigin(drink.origin || "");
+      setPrice(drink.price || "");
+      setStock(drink.stocks || "");
+      setDescription(drink.description || "");
+      setImages(drink.images || []);
     }
   }, [drink]);
 
-  if (!isOpen) return null; // Don't render if not open
-
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(files);
+  const handleSave = () => {
+    if (drinkName && origin && price && stock && description && images.length > 0) {
+      onClose();
+    } else {
+      alert("Please fill all fields.");
+    }
   };
 
-  const handleSubmit = () => {
-    const updatedDrink = {
-      name: drinkName,
-      origin, // Use the origin state
-      price: parseFloat(price), // Ensure price is a number
-      stock: parseInt(stock, 10), // Ensure stock is a number
-      image: images,
-    };
-    console.log("Updated Drink:", updatedDrink);
-    onClose(); // Close the modal after submission
+  const handleClose = () => {
+    onClose();
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files.map(file => URL.createObjectURL(file)));
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-gray-800 rounded-lg p-6 w-11/12 md:w-1/3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-100">Edit Drink</h3>
-          <IconButton
-            className="text-gray-400 hover:text-gray-200"
-            onClick={onClose} // Close the modal
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Drink Name"
-            value={drinkName}
-            onChange={(e) => setDrinkName(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      sx={{
+        '& .MuiDialog-paper': {
+          backgroundColor: '#1b2433',
+          color: 'white',
+          width: '450px',
+          padding: '20px',
+        }
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px' }}>
+        Edit Drink
+        <IconButton edge="end" color="inherit" onClick={handleClose} sx={{ position: 'absolute', right: 15, top: 12 }}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ paddingTop: '16px' }}>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <TextField
+              label="Drink Name"
+              value={drinkName}
+              onChange={(e) => setDrinkName(e.target.value)}
+              fullWidth
+              sx={{ backgroundColor: '#2c3e50', borderRadius: '4px', padding: '5px' }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              fullWidth
+              type="number"
+              sx={{ backgroundColor: '#2c3e50', borderRadius: '4px', padding: '5px' }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Stock"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              fullWidth
+              type="number"
+              sx={{ backgroundColor: '#2c3e50', borderRadius: '4px', padding: '5px' }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <FormControl fullWidth sx={{ backgroundColor: '#2c3e50', borderRadius: '4px', padding: '8px' }}>
+              <InputLabel>Origin</InputLabel>
+              <Select
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                label="Origin"
+                sx={{ color: 'white' }}
+              >
+                <MenuItem value="Brazil">Brazil</MenuItem>
+                <MenuItem value="Vietnam">Vietnam</MenuItem>
+                <MenuItem value="Ethiopia">Ethiopia</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              sx={{ backgroundColor: '#2c3e50', borderRadius: '4px', padding: '8px', mb: 2 }}
+            />
+          </Grid>
+        </Grid>
 
-          {/* Dropdown for Origin Selection */}
-          <FormControl fullWidth variant="outlined" className="mb-2">
-            <InputLabel id="origin-label">Origin</InputLabel>
-            <Select
-              labelId="origin-label"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="bg-gray-700 text-white"
-            >
-              <MenuItem value="">
-                <em>Select Origin</em>
-              </MenuItem>
-              <MenuItem value="Ethiopian Coffee">Ethiopian Coffee</MenuItem>
-              <MenuItem value="Brazilian Coffee">Brazilian Coffee</MenuItem>
-              <MenuItem value="Vietnamese Coffee">Vietnamese Coffee</MenuItem>
-            </Select>
-          </FormControl>
-
-          <input
-            type="text"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
-          <input
-            type="text"
-            placeholder="Stock"
-            value={stock}
-            onChange={(e) => setStock(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
+        <Button variant="contained" component="label" fullWidth sx={{
+          mb: 2,
+          backgroundColor: '#2a3342',
+          color: '#fff',
+          fontWeight: 'bold',
+        }}>
+          Upload Images
           <input
             type="file"
+            accept="image/*"
             multiple
-            onChange={handleFileChange}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+            hidden
+            onChange={handleImageChange}
           />
+        </Button>
+
+        <div style={{ display: 'flex', overflowX: 'auto', gap: '10px', marginBottom: '10px' }}>
+          {images.length > 0 && images.map((image, index) => (
+            <img key={index} src={image} alt={`Drink ${index}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '4px' }} />
+          ))}
         </div>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-4"
-          onClick={handleSubmit} // Logic to save the edited drink
-        >
-          Save Changes
-        </button>
-      </div>
-    </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary" sx={{ color: 'white' }}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} color="primary" sx={{ backgroundColor: '#27ae60', color: 'white', '&:hover': { backgroundColor: '#2ecc71' } }}>
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

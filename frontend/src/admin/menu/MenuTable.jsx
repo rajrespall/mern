@@ -1,276 +1,281 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, TextField, Grid, Box, IconButton } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { useSnackbar } from 'notistack';
+import MUIDataTable from 'mui-datatables';
+import { Button, IconButton, Dialog, DialogContent, Typography, Box, CardMedia, Card } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useSnackbar } from 'notistack';
+import AddDrinks from './AddDrinks';
+import EditDrinks from './EditDrinks';
+import Carousel from 'react-material-ui-carousel';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const MenuTable = () => {
-  const [open, setOpen] = useState(false);
-  const [newDrink, setNewDrink] = useState({
-    name: '',
-    description: '',
-    price: '',
-    images: []
-  });
   const [menuData, setMenuData] = useState([]);
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openImageDialog, setOpenImageDialog] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
+  const [editingDrink, setEditingDrink] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [expandedRows, setExpandedRows] = useState([]); // Track expanded rows for the table
-  const [editingDrink, setEditingDrink] = useState(null); // To keep track of which drink to edit
   const { enqueueSnackbar } = useSnackbar();
 
-  // Open modal for Add Drink
   const handleOpenAdd = () => {
-    setEditingDrink(null); // Reset editing drink for adding new drink
-    setNewDrink({
-      name: '',
-      description: '',
-      price: '',
-      images: []
-    });
-    setOpen(true);
+    setEditingDrink(null);
+    setOpenAddModal(true); // Set openAddModal to true to show the modal
   };
 
-  // Open modal for Edit Drink
   const handleOpenEdit = (drink) => {
-    setEditingDrink(drink); // Set the drink to be edited
-    setNewDrink({ ...drink }); // Pre-fill the form with the selected drink's data
-    setOpen(true);
+    setEditingDrink(drink);
+    setOpenEditModal(true);
   };
 
-  // Close modal
-  const handleClose = () => setOpen(false);
-
-  // Handle input change for drink details
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewDrink({
-      ...newDrink,
-      [name]: value
-    });
-  };
-
-  // Handle image selection
-  const handleImageChange = (e) => {
-    setNewDrink({
-      ...newDrink,
-      images: [...e.target.files]
-    });
-  };
-
-  // Handle drink form submission (Add or Edit)
-  const handleSubmit = () => {
-    if (editingDrink) {
-      // If editing, update the drink
-      const updatedData = menuData.map(drink =>
-        drink.id === editingDrink.id ? { ...editingDrink, ...newDrink } : drink
-      );
-      setMenuData(updatedData);
-      enqueueSnackbar('Drink updated successfully!', { variant: 'success' });
-    } else {
-      // If adding, create a new drink
-      const newDrinkData = { ...newDrink, id: menuData.length + 1 };  // New drink's ID
-      setMenuData([newDrinkData, ...menuData]); // Insert new drink at the top
-      enqueueSnackbar('New drink added successfully!', { variant: 'success' });
-    }
-    handleClose();
-  };
-
-  // Handle bulk delete
-  const handleBulkDelete = () => {
-    const filteredData = menuData.filter((drink) => !selectedRows.includes(drink.id));
-    setMenuData(filteredData);
-    setSelectedRows([]);
-    enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
-  };
-
-  // Handle delete for a single drink
   const handleDelete = (id) => {
-    const filteredData = menuData.filter((drink) => drink.id !== id);
-    setMenuData(filteredData);
+    setMenuData((prevData) => prevData.filter((drink) => drink.id !== id));
     enqueueSnackbar('Drink deleted successfully!', { variant: 'success' });
   };
 
-  // Toggle the expanded/collapsed state of rows
+  const handleBulkDelete = () => {
+    setMenuData((prevData) => prevData.filter((drink) => !selectedRows.includes(drink.id)));
+    setSelectedRows([]); // Clear selected rows after deletion
+    enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
+  };
+
   const handleExpandClick = (id) => {
     setExpandedRows((prevState) =>
       prevState.includes(id) ? prevState.filter((item) => item !== id) : [...prevState, id]
     );
   };
 
-  // Simulate fetching initial menu data
+  const handleViewImages = (images) => {
+    setCurrentImages(images);
+    setOpenImageDialog(true);
+  };
+
   useEffect(() => {
     setMenuData([
-      { id: 1, name: 'Latte', description: 'A smooth coffee with steamed milk that provides a rich and creamy texture. It is a favorite for many coffee lovers!', price: 5.99, image: '/img/latte.png' },
-      { id: 2, name: 'Espresso', description: 'Strong and bold coffee, made by forcing hot water through finely-ground coffee beans. The foundation for many coffee drinks.', price: 3.99, image: '/img/espresso.png' },
+      { id: 1, name: 'Latte', description: 'Smooth coffee with steamed milk', price: 5.99, origin: 'Brazil', stocks: 20, images: ['/img/latte1.png', '/img/latte2.png'] },
+      { id: 2, name: 'Espresso', description: 'Strong and bold coffee', price: 3.99, origin: 'Vietnam', stocks: 15, images: ['/img/espresso1.png', '/img/espresso2.png'] },
     ]);
   }, []);
 
-  // Define columns for DataGrid
   const columns = [
-    { field: 'id', headerName: 'ID', width: 100, sortable: false },
+    { name: 'id', label: 'ID' },
     {
-      field: 'image',
-      headerName: 'Image',
-      width: 150,
-      renderCell: (params) => <img src={params.value} alt={params.row.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+      name: 'images',
+      label: 'Images',
+      options: {
+        customBodyRender: (images) => (
+          <CardMedia
+            component="img"
+            image={images[0]}
+            alt="Drink Image"
+            sx={{ width: 80, height: 60, borderRadius: '4px' }}
+          />
+        ),
+      },
     },
-    { field: 'name', headerName: 'Name', width: 200, cellClassName: 'text-white' },
-    { field: 'price', headerName: 'Price', width: 120, cellClassName: 'text-white' },
+    { name: 'name', label: 'Item Name' },
+    { name: 'origin', label: 'Origin' },
+    { name: 'price', label: 'Price', options: { customBodyRender: (value) => `$${value.toFixed(2)}` } },
+    { name: 'stocks', label: 'Stocks' },
+    { name: 'description', label: 'Description' },
     {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 200,
-      renderCell: (params) => (
-        <div>
-          <IconButton
-            style={{ cursor: 'pointer', marginRight: '10px', color: 'white' }}
-            onClick={() => handleOpenEdit(params.row)} // Open modal for editing
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            style={{ cursor: 'pointer', color: 'white' }}
-            onClick={() => handleDelete(params.row.id)} // Delete the selected drink
-          >
-            <DeleteIcon />
-          </IconButton>
-          <IconButton
-            style={{ cursor: 'pointer', color: 'white', marginLeft: '10px' }}
-            onClick={() => handleExpandClick(params.row.id)} // Expand/Collapse the row details
-          >
-            {expandedRows.includes(params.row.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        </div>
-      )
-    },
-    {
-      field: 'expandDetails',
-      headerName: 'Details',
-      width: 200,
-      renderCell: (params) => (
-        expandedRows.includes(params.row.id) && (
-          <div style={{ marginTop: '10px', background: '#444', color: 'white', padding: '10px', borderRadius: '5px' }}>
-            <p><strong>Price:</strong> ${params.row.price}</p>
-            <p><strong>Description:</strong> {params.row.description}</p>
-          </div>
-        )
-      ),
+      name: 'actions',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const rowIndex = tableMeta.rowIndex;
+          const rowData = menuData[rowIndex];
+          return (
+            <div>
+              <IconButton onClick={() => handleOpenEdit(rowData)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton onClick={() => handleDelete(rowData.id)}>
+                <DeleteIcon />
+              </IconButton>
+              <IconButton onClick={() => handleExpandClick(rowData.id)}>
+                {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+            </div>
+          );
+        }
+      }
     }
   ];
 
-  const handleSelectionModelChange = (newSelection) => {
-    setSelectedRows(newSelection.selectionModel);
-  };
-
-  return (
-    <div>
-      {/* Button to open modal for adding a new drink */}
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpenAdd}
-        style={{ marginBottom: '20px' }}
-      >
-        Add New Drink
-      </Button>
-
-      {/* Bulk Delete Button */}
-      {selectedRows.length > 0 && (
-        <Button
-          variant="contained"
-          color="error"
-          onClick={handleBulkDelete}
-          style={{ marginBottom: '20px', marginLeft: '10px' }}
-        >
-          Delete Selected Drinks
-        </Button>
-      )}
-
-      {/* DataGrid to show menu data */}
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={menuData}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
-          checkboxSelection
-          onSelectionModelChange={handleSelectionModelChange}
-        />
-      </div>
-
-      {/* Modal for adding/editing drink */}
-      <Modal open={open} onClose={handleClose}>
+  const options = {
+    selectableRows: 'multiple', // Allow multiple row selection
+    onRowsSelect: (currentRowsSelected, allRowsSelected) => {
+      setSelectedRows(allRowsSelected.map((row) => row.dataIndex)); // Get selected rows' IDs
+    },
+    expandableRows: true,
+    renderExpandableRow: (rowData) => {
+      const row = menuData.find((drink) => drink.id === rowData[0]);
+      return (
         <Box
-          style={{
-            width: '400px',
-            margin: 'auto',
-            padding: '20px',
-            backgroundColor: 'white',
-            marginTop: '100px',
-            borderRadius: '8px'
+          key={row.id}
+          sx={{
+            width: '450%',
+            maxWidth: '1000px',
+            paddingTop: '12px',
+            paddingLeft: '50px',
+            paddingRight: '20px',
+            paddingBottom: '10px',
+            bgcolor: '#1b2433',
+            color: '#fff',
+            borderRadius: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
           }}
         >
-          <h2>{editingDrink ? 'Edit Drink' : 'Add New Drink'}</h2>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Drink Name"
-                variant="outlined"
-                name="name"
-                value={newDrink.name}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Description"
-                variant="outlined"
-                name="description"
-                value={newDrink.description}
-                onChange={handleChange}
-                multiline
-                rows={4}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Price"
-                variant="outlined"
-                name="price"
-                value={newDrink.price}
-                onChange={handleChange}
-                type="number"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <input
-                type="file"
-                multiple
-                onChange={handleImageChange}
-                accept="image/*"
-              />
-            </Grid>
-            <Grid item xs={12} style={{ marginTop: '20px' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-              >
-                {editingDrink ? 'Save Changes' : 'Add Drink'}
-              </Button>
-            </Grid>
-          </Grid>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+            {row.name}
+          </Typography>
+          <Typography variant="body1">ID: {row.id}</Typography>
+          <Typography variant="body1">Origin: {row.origin}</Typography>
+          <Typography variant="body1">Price: ${row.price}</Typography>
+          <Typography variant="body1">Stocks: {row.stocks}</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+            Description: {row.description}
+          </Typography>
+          <Button variant="outlined" color="primary" onClick={() => handleViewImages(row.images)} sx={{ mt: 2 }}>
+            View Images
+          </Button>
         </Box>
-      </Modal>
-    </div>
+      );
+    },
+    customToolbarSelect: () => (
+      <Button variant="contained" color="error" onClick={handleBulkDelete}>
+        Delete Selected Drinks
+      </Button>
+    ),
+    responsive: 'standard',
+    pagination: true,
+    filterType: 'checkbox',
+    viewColumns: false,
+  };
+
+  const theme = createTheme({
+    palette: {
+      mode: 'dark',
+      background: {
+        default: '#1b2433',
+        paper: '#1b2433',
+      },
+      text: {
+        primary: '#fff',
+      },
+    },
+    components: {
+      MuiTable: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#1b2433',
+          },
+        },
+      },
+      MuiTableHead: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#282c34',
+            color: '#fff',
+          },
+        },
+      },
+      MuiTableBody: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#1b2433',
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            color: '#fff',
+          },
+        },
+      },
+    },
+  });
+
+  return (
+    <ThemeProvider theme={theme}>
+      <div style={{ padding: '10px' }}>
+        <div style={{ padding: '10px' }}>
+          <div style={{ padding: '5px' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenAdd}
+              sx={{
+                mb: 2,
+                backgroundColor: '#2a3342',
+                border: '2px solid #fff',
+                borderRadius: '4px',
+                color: '#fff',
+                fontWeight: 'bold',
+              }}
+            >
+              Add New Drink
+            </Button>
+          </div>
+        </div>
+
+        <MUIDataTable
+          title={"Menu Table"}
+          data={menuData}
+          columns={columns}
+          options={options}
+          sx={{
+            '& .MuiTable-root': {
+              backgroundColor: '#1b2433',
+            },
+          }}
+        />
+
+        {openImageDialog && (
+          <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)}>
+            <DialogContent>
+              <Carousel>
+                {currentImages.map((image, index) => (
+                  <img key={index} src={image} alt={`Drink Image ${index}`} style={{ width: '100%' }} />
+                ))}
+              </Carousel>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {openAddModal && (
+          <AddDrinks
+            open={openAddModal}
+            onClose={() => setOpenAddModal(false)} // Close modal when clicked outside or after submission
+            onAddDrink={(newDrink) => setMenuData([...menuData, newDrink])}
+          />
+        )}
+
+        {openEditModal && (
+          <EditDrinks
+            isOpen={openEditModal}  // Pass the state variable as 'isOpen'
+            drink={editingDrink}
+            onClose={() => setOpenEditModal(false)}
+            onEditDrink={(updatedDrink) => {
+              setMenuData((prevData) =>
+                prevData.map((drink) => (drink.id === updatedDrink.id ? updatedDrink : drink))
+              );
+            }}
+          />
+        )}
+
+      </div>
+    </ThemeProvider>
   );
 };
 

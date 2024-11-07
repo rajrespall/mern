@@ -1,100 +1,102 @@
-import React, { useState } from "react";
-import { IconButton, Select, MenuItem, InputLabel, FormControl } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import React, { useState } from 'react';
 
-const AddDrinks = ({ open, handleClose, handleAddDrink }) => {
-  const [drinkName, setDrinkName] = useState("");
-  const [origin, setOrigin] = useState(""); // State for origin
-  const [price, setPrice] = useState("");
-  const [stocks, setStocks] = useState("");
+const AddDrinks = ({ onAddDrink, onClose }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [stock, setStock] = useState(''); // Added stock state
   const [images, setImages] = useState([]);
 
-  if (!open) return null; // Don't render if not open
+  const coffeeOrigins = ['Brazil', 'Vietnam', 'Ethiopia'];
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(files);
+    const selectedFiles = Array.from(e.target.files);
+    setImages((prevImages) => [...prevImages, ...selectedFiles]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const handleSubmit = () => {
-    const newDrink = {
-      name: drinkName,
-      origin,
-      price: parseFloat(price), // Ensure price is a number
-      stock: parseInt(stocks, 10), // Ensure stock is a number
-      images, // You might need to handle images if necessary
-    };
-    handleAddDrink(newDrink); // Call the parent handler
-    handleClose(); // Close the modal after submission
+    if (!name || !description || !price || !origin || !stock || images.length === 0) {
+      alert('Please fill in all fields and upload at least one image.');
+      return;
+    }
+
+    const newDrink = { name, description, price, origin, stocks: stock, images };
+    onAddDrink(newDrink);
+    onClose(); // Close modal
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-gray-800 rounded-lg p-6 w-11/12 md:w-1/3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-100">Add New Drink</h3>
-          <IconButton
-            className="text-gray-400 hover:text-gray-200"
-            onClick={handleClose} // Close the modal
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Drink Name"
-            value={drinkName}
-            onChange={(e) => setDrinkName(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md text-white">
+        <h2 className="text-2xl mb-4">Add New Drink</h2>
+        
+        {/* Drink Name Input */}
+        <input
+          type="text"
+          placeholder="Drink Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+        />
 
-          {/* Dropdown for Origin Selection */}
-          <FormControl fullWidth variant="outlined" className="mb-2">
-            <InputLabel id="origin-label" sx={{ color: 'white' }}>Origin</InputLabel>
-            <Select
-              labelId="origin-label"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="bg-gray-700 text-white"
-              MenuProps={{ PaperProps: { sx: { bgcolor: 'gray.800' } } }} // Optional: Change dropdown background
-            >
-              <MenuItem value="">
-                <em>Select Origin</em>
-              </MenuItem>
-              <MenuItem value="Ethiopian Coffee">Ethiopian Coffee</MenuItem>
-              <MenuItem value="Brazilian Coffee">Brazilian Coffee</MenuItem>
-              <MenuItem value="Vietnamese Coffee">Vietnamese Coffee</MenuItem>
-            </Select>
-          </FormControl>
-
-          <input
-            type="text"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
-          <input
-            type="text"
-            placeholder="Stocks"
-            value={stocks}
-            onChange={(e) => setStocks(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
-          />
-        </div>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-4"
-          onClick={handleSubmit} // Logic to save the product
+        {/* Origin Dropdown */}
+        <select
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
         >
-          Save Drink
-        </button>
+          <option value="">Select Origin</option>
+          {coffeeOrigins.map((originOption, index) => (
+            <option key={index} value={originOption}>
+              {originOption}
+            </option>
+          ))}
+        </select>
+
+        {/* Price Input */}
+        <input
+          type="number"
+          placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+        />
+
+        {/* Stock Input */}
+        <input
+          type="number"
+          placeholder="Stock"
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+        />
+
+        {/* Description Textarea */}
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+        />
+
+        {/* Image Upload */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          multiple
+          className="bg-gray-700 text-white rounded-lg w-full p-2 mb-2"
+        />
+        
+        <div className="flex mt-4 justify-between">
+          <button onClick={handleSubmit} className="bg-blue-500 px-4 py-2 rounded">Submit</button>
+          <button onClick={onClose} className="bg-gray-500 px-4 py-2 rounded">Cancel</button>
+        </div>
       </div>
     </div>
   );
