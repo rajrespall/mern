@@ -12,7 +12,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import Menu from "./pages/Menu/MenuPage.jsx";
-import ProdPage from "./pages/Product/ProdPage.jsx";
+// import ProdPage from "./pages/Product/ProdPage.jsx";
 import Feedbacks from "./pages/Feedback/Feedbacks";
 import CartPage from "./pages/Cart/CartPage";
 import Profile from "./pages/Profile";
@@ -20,7 +20,6 @@ import Profile from "./pages/Profile";
 // Admin imports
 import Sidebar from "./admin/common/Sidebar";
 import OverviewPage from "./admin/pages/OverviewPage";
-import ProductsPage from "./admin/pages/ProductsPage";
 import UsersPage from "./admin/pages/UsersPage";
 import SalesPage from "./admin/pages/SalesPage";
 import OrdersPage from "./admin/pages/OrdersPage";
@@ -115,16 +114,6 @@ function App() {
                     }
                 />
 
-                {/* Product Page Route */}
-                <Route
-                    path='/products'
-                    element={
-                        <ProtectedRoute role="customer">
-                            <Navbar />
-                            <ProdPage />
-                        </ProtectedRoute>
-                    }
-                />
 
                 {/* Feedback Route */}
                 <Route
@@ -152,7 +141,6 @@ function App() {
                                 <Routes>
                                     <Route path='overview' element={<OverviewPage />} />
                                     <Route path='menus' element={<MenusPage />} />
-                                    <Route path='products' element={<ProductsPage />} />
                                     <Route path='users' element={<UsersPage />} />
                                     <Route path='sales' element={<SalesPage />} />
                                     <Route path='orders' element={<OrdersPage />} />

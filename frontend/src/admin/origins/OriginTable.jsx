@@ -1,169 +1,255 @@
-import React, { useState } from "react";
-import DataTable from "react-data-table-component";
-import { motion } from "framer-motion";
-import { Edit, Search, Trash2, Plus } from "lucide-react";
-import AddOrigin from "./AddOrigin"; // Import the AddOrigin component
-import EditOrigin from "./EditOrigin"; // Import the EditOrigin component
-
-const ORIGIN_DATA = [
-  { id: 1, name: "Ethiopian Coffee", price: 25.99, stock: 143, sales: 1200, image: "/img/ethiopia.png" },
-  { id: 3, name: "Brazilian Coffee", price: 19.99, stock: 56, sales: 650, image: "/img/brazil.png" },
-  { id: 5, name: "Vietnamese Coffee", price: 15.99, stock: 78, sales: 720, image: "/img/vietnam.png" },
-];
+import React, { useState, useEffect } from 'react';
+import { useSnackbar } from 'notistack';
+import MUIDataTable from 'mui-datatables';
+import { Button, IconButton, Dialog, DialogContent, Typography, Box, CardMedia, Card } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import AddOrigin from './AddOrigin';
+import EditOrigin from './EditOrigin';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const OriginTable = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOrigins, setFilteredOrigins] = useState(ORIGIN_DATA);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // Modal state for adding origin
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal state for editing origin
-  const [selectedOrigin, setSelectedOrigin] = useState(null); // Store the selected origin to edit
+  const [originData, setOriginData] = useState([]);
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editingOrigin, setEditingOrigin] = useState(null);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    const filtered = ORIGIN_DATA.filter(
-      (origin) =>
-        origin.name.toLowerCase().includes(term) || origin.variety.toLowerCase().includes(term)
+  const handleOpenAdd = () => {
+    setEditingOrigin(null);
+    setOpenAddModal(true);
+  };
+
+  const handleOpenEdit = (origin) => {
+    setEditingOrigin(origin);
+    setOpenEditModal(true);
+  };
+
+  const handleDelete = (id) => {
+    setOriginData((prevData) => prevData.filter((origin) => origin.id !== id));
+    enqueueSnackbar('Origin deleted successfully!', { variant: 'success' });
+  };
+
+  const handleBulkDelete = () => {
+    setOriginData((prevData) => prevData.filter((origin) => !selectedRows.includes(origin.id)));
+    setSelectedRows([]);
+    enqueueSnackbar('Selected origins deleted successfully!', { variant: 'success' });
+  };
+
+  const handleExpandClick = (id) => {
+    setExpandedRows((prevState) =>
+      prevState.includes(id) ? prevState.filter((item) => item !== id) : [...prevState, id]
     );
-    setFilteredOrigins(filtered);
   };
 
-  const handleAddOrigin = () => {
-    setIsAddModalOpen(true); // Open modal for adding origin
-  };
-
-  const handleEditOrigin = (origin) => {
-    setSelectedOrigin(origin); // Set the selected origin to edit
-    setIsEditModalOpen(true); // Open modal for editing
-  };
-
-  const closeAddModal = () => {
-    setIsAddModalOpen(false); // Close the add modal
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false); // Close the edit modal
-    setSelectedOrigin(null); // Reset selected origin
-  };
+  useEffect(() => {
+    setOriginData([
+      { id: 1, name: 'Ethiopia', description: 'Known for its rich coffee culture', price: 25, region: 'Africa', images: ['/img/ethiopia1.png', '/img/ethiopia2.png'] },
+      { id: 2, name: 'Colombia', description: 'Famous for its smooth coffee', price: 20, region: 'South America', images: ['/img/colombia1.png', '/img/colombia2.png'] },
+    ]);
+  }, []);
 
   const columns = [
+    { name: 'id', label: 'ID' },
     {
-      name: "Country",
-      selector: (row) => row.name,
-      sortable: true,
-      cell: (row) => (
-           <div className="flex items-center gap-2">
-          <img src={row.image} alt={row.name} className="w-10 h-10 rounded-full" />
-          <span>{row.name}</span>
-        </div>
-      ),
+      name: 'images',
+      label: 'Images',
+      options: {
+        customBodyRender: (images) => (
+          <CardMedia
+            component="img"
+            image={images[0]}
+            alt="Origin Image"
+            sx={{ width: 80, height: 60, borderRadius: '4px' }}
+          />
+        ),
+      },
     },
+    { name: 'name', label: 'Origin Name' },
+    { name: 'region', label: 'Region' },
+    { name: 'price', label: 'Price', options: { customBodyRender: (value) => `$${value.toFixed(2)}/kg` } },
+    { name: 'description', label: 'Description' },
     {
-      name: "Price",
-      selector: (row) => `$${row.price.toFixed(2)}`,
-      sortable: true,
-    },
-    {
-      name: "Stock",
-      selector: (row) => row.stock,
-      sortable: true,
-    },
-    {
-      name: "Sales",
-      selector: (row) => row.sales,
-      sortable: true,
-    },
-    {
-      name: "Actions",
-      cell: (row) => (
-        <div className="flex gap-2">
-          <button
-            className="text-indigo-400 hover:text-indigo-300"
-            onClick={() => handleEditOrigin(row)} // Trigger edit modal
-          >
-            <Edit size={18} />
-          </button>
-          <button className="text-red-400 hover:text-red-300">
-            <Trash2 size={18} />
-          </button>
-        </div>
-      ),
-    },
+      name: 'actions',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const rowIndex = tableMeta.rowIndex;
+          const rowData = originData[rowIndex];
+          return (
+            <div>
+              <IconButton onClick={() => handleOpenEdit(rowData)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton onClick={() => handleDelete(rowData.id)}>
+                <DeleteIcon />
+              </IconButton>
+              <IconButton onClick={() => handleExpandClick(rowData.id)}>
+                {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+            </div>
+          );
+        }
+      }
+    }
   ];
 
+  const options = {
+    selectableRows: 'multiple',
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
+      setSelectedRows(allRowsSelected.map((row) => row.dataIndex));
+    },
+    expandableRows: true,
+    renderExpandableRow: (rowData) => {
+      const row = originData.find((origin) => origin.id === rowData[0]);
+      return (
+        <Box
+          key={row.id}
+          sx={{
+            width: '450%',
+            maxWidth: '1000px',
+            paddingTop: '12px',
+            paddingLeft: '50px',
+            paddingRight: '20px',
+            paddingBottom: '10px',
+            bgcolor: '#1b2433',
+            color: '#fff',
+            borderRadius: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+            {row.name}
+          </Typography>
+          <Typography variant="body1">ID: {row.id}</Typography>
+          <Typography variant="body1">Region: {row.region}</Typography>
+          <Typography variant="body1">Price: ${row.price}/kg</Typography>
+          <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+            Description: {row.description}
+          </Typography>
+        </Box>
+      );
+    },
+    customToolbarSelect: () => (
+      <Button variant="contained" color="error" onClick={handleBulkDelete}>
+        Delete Selected Origins
+      </Button>
+    ),
+    responsive: 'standard',
+    pagination: true,
+    filterType: 'checkbox',
+    viewColumns: false,
+  };
+
+  const theme = createTheme({
+    palette: {
+      mode: 'dark',
+      background: {
+        default: '#1b2433',
+        paper: '#1b2433',
+      },
+      text: {
+        primary: '#fff',
+      },
+    },
+    components: {
+      MuiTable: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#1b2433',
+          },
+        },
+      },
+      MuiTableHead: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#282c34',
+            color: '#fff',
+          },
+        },
+      },
+      MuiTableBody: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#1b2433',
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            color: '#fff',
+          },
+        },
+      },
+    },
+  });
+
   return (
-    <motion.div
-      className="bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700 mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-100">Coffee Origins</h2>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search origins..."
-              className="bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={handleSearch}
-              value={searchTerm}
-            />
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+    <ThemeProvider theme={theme}>
+      <div style={{ padding: '10px' }}>
+        <div style={{ padding: '10px' }}>
+          <div style={{ padding: '5px' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenAdd}
+              sx={{
+                mb: 2,
+                backgroundColor: '#2a3342',
+                border: '2px solid #fff',
+                borderRadius: '4px',
+                color: '#fff',
+                fontWeight: 'bold',
+              }}
+            >
+              Add New Origin
+            </Button>
           </div>
-          <button
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition"
-            onClick={handleAddOrigin}
-          >
-            <Plus size={18} className="mr-2" />
-            Add Origin
-          </button>
         </div>
+
+        <MUIDataTable
+          title={"Origin Table"}
+          data={originData}
+          columns={columns}
+          options={options}
+          sx={{
+            '& .MuiTable-root': {
+              backgroundColor: '#1b2433',
+            },
+          }}
+        />
+
+        {openAddModal && (
+          <AddOrigin
+            isOpen={openAddModal}
+            onClose={() => setOpenAddModal(false)}
+            onAddOrigin={(newOrigin) => setOriginData([...originData, newOrigin])}
+          />
+        )}
+
+        {openEditModal && (
+          <EditOrigin
+            isOpen={openEditModal}
+            origin={editingOrigin}
+            onClose={() => setOpenEditModal(false)}
+            onEditOrigin={(updatedOrigin) => {
+              setOriginData((prevData) =>
+                prevData.map((origin) => (origin.id === updatedOrigin.id ? updatedOrigin : origin))
+              );
+            }}
+          />
+        )}
       </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredOrigins}
-        pagination
-        highlightOnHover
-        customStyles={{
-          rows: {
-            style: {
-              backgroundColor: 'rgb(31 41 55 / var(--tw-bg-opacity))',
-              '--tw-bg-opacity': '1',
-              color: '#ddd',
-            },
-          },
-          headCells: {
-            style: {
-              backgroundColor: 'rgb(31 41 55 / var(--tw-bg-opacity))',
-              '--tw-bg-opacity': '1',
-              color: '#fff',
-            },
-          },
-          cells: {
-            style: {
-              color: '#ddd',
-            },
-          },
-          pagination: {
-            style: {
-              backgroundColor: 'rgb(31 41 55 / var(--tw-bg-opacity))',
-              '--tw-bg-opacity': '1',
-              color: '#fff',
-            },
-          },
-        }}
-      />
-
-      {/* AddOrigin modal */}
-      <AddOrigin isOpen={isAddModalOpen} onClose={closeAddModal} />
-
-      {/* EditOrigin modal */}
-      {isEditModalOpen && (
-        <EditOrigin isOpen={isEditModalOpen} onClose={closeEditModal} origin={selectedOrigin} />
-      )}
-    </motion.div>
+    </ThemeProvider>
   );
 };
 

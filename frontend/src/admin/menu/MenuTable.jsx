@@ -110,7 +110,7 @@ const MenuTable = () => {
 
   const options = {
     selectableRows: 'multiple', // Allow multiple row selection
-    onRowsSelect: (currentRowsSelected, allRowsSelected) => {
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
       setSelectedRows(allRowsSelected.map((row) => row.dataIndex)); // Get selected rows' IDs
     },
     expandableRows: true,

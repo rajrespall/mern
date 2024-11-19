@@ -8,7 +8,6 @@ const SIDEBAR_ITEMS = [
   { name: "Overview", icon: BarChart, color: "#6366f1", href: "/admin/overview" },
   { name: "Menu", icon: "/img/menu.png", color: "#FF5722", href: "/admin/menus" },
   { name: "Origins", icon: "/img/origins.png", color: "#FFEB3B", href: "/admin/origins" },
-  { name: "Products", icon: "/img/coffee.png", color: "#8B5CF6", href: "/admin/products" },
   { name: "Users", icon: People, color: "#EC4899", href: "/admin/users" },
   { name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/admin/orders" },
   { name: "Sales", icon: AttachMoney, color: "#10B981", href: "/admin/sales" },

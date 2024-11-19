@@ -1,7 +1,7 @@
 import { User } from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
-import admin from "../utils/firebase.js";
+// import admin from "../utils/firebase.js";
 import { generateTokenandSetCookie } from "../utils/generateTokenandSetCookie.js";
 import { sendVerificationEmail, SendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
 
