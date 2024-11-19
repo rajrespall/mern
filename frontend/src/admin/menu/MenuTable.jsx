@@ -11,6 +11,7 @@ import AddDrinks from './AddDrinks';
 import EditDrinks from './EditDrinks';
 import Carousel from 'react-material-ui-carousel';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import useProductStore from "../../store/productStore";
 
 const MenuTable = () => {
   const [menuData, setMenuData] = useState([]);
@@ -22,6 +23,27 @@ const MenuTable = () => {
   const [editingDrink, setEditingDrink] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
+
+  const { products, fetchProducts } = useProductStore();
+
+  useEffect(() => {
+    // Fetch products when component mounts
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    // Transform products into menu data format when products change
+    const transformedData = products.map(product => ({
+      id: product._id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      origin: product.origin,
+      stocks: product.stocks || 0,
+      images: product.images.map(img => img.url)
+    }));
+    setMenuData(transformedData);
+  }, [products]);
 
   const handleOpenAdd = () => {
     setEditingDrink(null);
@@ -40,7 +62,7 @@ const MenuTable = () => {
 
   const handleBulkDelete = () => {
     setMenuData((prevData) => prevData.filter((drink) => !selectedRows.includes(drink.id)));
-    setSelectedRows([]); // Clear selected rows after deletion
+    setSelectedRows([]); 
     enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
   };
 
@@ -54,13 +76,6 @@ const MenuTable = () => {
     setCurrentImages(images);
     setOpenImageDialog(true);
   };
-
-  useEffect(() => {
-    setMenuData([
-      { id: 1, name: 'Latte', description: 'Smooth coffee with steamed milk', price: 5.99, origin: 'Brazil', stocks: 20, images: ['/img/latte1.png', '/img/latte2.png'] },
-      { id: 2, name: 'Espresso', description: 'Strong and bold coffee', price: 3.99, origin: 'Vietnam', stocks: 15, images: ['/img/espresso1.png', '/img/espresso2.png'] },
-    ]);
-  }, []);
 
   const columns = [
     { name: 'id', label: 'ID' },

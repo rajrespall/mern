@@ -3,7 +3,7 @@ import cloudinary from '../utils/cloudinary.js';
 import fs from 'fs';
 
 export const createProduct = async (req, res) => {
-  const { name, description, price } = req.body;
+  const { name, description, price, category } = req.body;
   try {
     const uploadPromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ export const createProduct = async (req, res) => {
     }));
 
     const newProduct = new Product({
-      name, description, price,
+      name, description, price, category,
       images
     });
 
@@ -62,14 +62,14 @@ export const getProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const { name, description, price } = req.body;
+  const { name, description, price, category } = req.body;
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    let updatedData = { name, description, price };
+    let updatedData = { name, description, price, category };
 
     if (req.files && req.files.length > 0) {
       // Delete old images from Cloudinary

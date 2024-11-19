@@ -25,6 +25,11 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+    enum: ['Ethiopian', 'Brazilian', 'Vietnamese', 'Italian',  'Mexican', 'American', 'Other'],
+  },
   images: [ImageSchema], // Array of image objects
 }, { timestamps: true });
 
