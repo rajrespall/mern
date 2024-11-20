@@ -94,7 +94,22 @@ const MenuTable = () => {
   };
 
   const columns = [
-    { name: 'id', label: 'ID' },
+    { name: 'id', 
+      label: 'ID',
+      options: {
+        display: false // Hide original ID column
+      }
+    },
+    {
+      name: 'sequentialId',
+      label: '#',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          return tableMeta.rowIndex + 1;
+        },
+        sort: false // Disable sorting since it's just visual
+      }
+    },
     {
       name: 'images',
       label: 'Images',
