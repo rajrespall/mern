@@ -125,24 +125,37 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-      const product = await Product.findById(req.params.id);
-      if (!product) {
-          return res.status(404).json({ success: false, message: "Product not found" });
-      }
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
 
-      await cloudinary.uploader.destroy(product.cloudinary_id);
+    // Delete all images associated with the product from cloudinary
+    if (product.images && product.images.length > 0) {
+      const deletePromises = product.images.map(image => {
+        if (image.cloudinary_id) {
+          return cloudinary.uploader.destroy(image.cloudinary_id);
+        }
+        return Promise.resolve(); // Skip if no cloudinary_id
+      });
 
-      await Product.findByIdAndDelete(req.params.id);
+      await Promise.all(deletePromises);
+    }
 
-      res.status(200).json({ success: true, message: "Product deleted successfully" });
+    // Delete the product from database
+    await Product.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Product and associated images deleted successfully" 
+    });
 
   } catch (error) {
-      console.error("Error deleting product: ", error); 
-
-      res.status(500).json({
-          success: false,
-          message: "Server error",
-          error: error.message || error 
-      });
+    console.error("Error deleting product: ", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message || error
+    });
   }
 };

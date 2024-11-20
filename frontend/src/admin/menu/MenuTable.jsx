@@ -24,7 +24,7 @@ const MenuTable = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
 
-  const { products, fetchProducts } = useProductStore();
+  const { products, fetchProducts, deleteProduct, isLoading } = useProductStore();
 
   useEffect(() => {
     fetchProducts();
@@ -36,8 +36,8 @@ const MenuTable = () => {
       name: product.name,
       description: product.description,
       price: product.price,
-      origin: product.origin,
-      stocks: product.stocks || 0,
+      origin: product.category,
+      stocks: product.stock || 0,
       images: product.images.map(img => img.url)
     }));
     setMenuData(transformedData);
@@ -53,15 +53,25 @@ const MenuTable = () => {
     setOpenEditModal(true);
   };
 
-  const handleDelete = (id) => {
-    setMenuData((prevData) => prevData.filter((drink) => drink.id !== id));
-    enqueueSnackbar('Drink deleted successfully!', { variant: 'success' });
+  const handleDelete = async (id) => {
+    try {
+      await deleteProduct(id);
+      await fetchProducts();
+      enqueueSnackbar('Drink deleted successfully!', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar(error.message || 'Error deleting drink', { variant: 'error' });
+    }
   };
 
-  const handleBulkDelete = () => {
-    setMenuData((prevData) => prevData.filter((drink) => !selectedRows.includes(drink.id)));
-    setSelectedRows([]); 
-    enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
+  const handleBulkDelete = async () => {
+    try {
+      // Delete selected products sequentially
+      await Promise.all(selectedRows.map(id => deleteProduct(id)));
+      setSelectedRows([]); 
+      enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar(error.message || 'Error deleting drinks', { variant: 'error' });
+    }
   };
 
   const handleExpandClick = (id) => {
@@ -108,7 +118,7 @@ const MenuTable = () => {
               <IconButton onClick={() => handleOpenEdit(rowData)}>
                 <EditIcon />
               </IconButton>
-              <IconButton onClick={() => handleDelete(rowData.id)}>
+              <IconButton onClick={() => handleDelete(rowData.id)} disabled={isLoading}>
                 <DeleteIcon />
               </IconButton>
               <IconButton onClick={() => handleExpandClick(rowData.id)}>
