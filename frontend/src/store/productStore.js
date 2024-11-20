@@ -75,25 +75,42 @@ const useProductStore = create((set) => ({
     set({ isLoading: true });
     try {
       const formData = new FormData();
-      Object.keys(productData).forEach(key => {
-        if (key === 'images' && Array.isArray(productData[key])) {
-          productData[key].forEach(image => {
-            formData.append('images', image);
-          });
-        } else {
-          formData.append(key, productData[key]);
+      
+      // Append basic product data
+      formData.append('name', productData.name);
+      formData.append('description', productData.description);
+      formData.append('price', productData.price);
+      formData.append('category', productData.category);
+      formData.append('stock', productData.stock);
+  
+      // Only append images if new ones are provided
+      if (productData.images?.length > 0) {
+        productData.images.forEach(image => {
+          formData.append('images', image);
+        });
+      }
+  
+      const response = await axios.put(
+        `http://localhost:5000/api/products/${id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         }
-      });
-
-      const response = await axios.put(`http://localhost:5000/api/products/${id}`, formData);
+      );
+  
       set(state => ({
         products: state.products.map(product => 
           product._id === id ? response.data : product
         ),
         isLoading: false
       }));
+      
+      return response.data;
     } catch (error) {
       set({ error: error.message, isLoading: false });
+      throw error;
     }
   }
 }));

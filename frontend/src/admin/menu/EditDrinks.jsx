@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { IconButton, Select, MenuItem, InputLabel, FormControl, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Grid } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import useProductStore from '../../store/productStore';
+import { Loader } from 'lucide-react';
 
 const EditDrinks = ({ isOpen, onClose, drink }) => {
   const [drinkName, setDrinkName] = useState("");
@@ -9,6 +11,10 @@ const EditDrinks = ({ isOpen, onClose, drink }) => {
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const { updateProduct } = useProductStore();
 
   useEffect(() => {
     if (drink) {
@@ -21,11 +27,36 @@ const EditDrinks = ({ isOpen, onClose, drink }) => {
     }
   }, [drink]);
 
-  const handleSave = () => {
-    if (drinkName && origin && price && stock && description && images.length > 0) {
+  const handleSave = async () => {
+    try {
+      if (!drinkName || !origin || !price || !stock || !description) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      setLoading(true);
+
+      await updateProduct(drink.id, {
+        name: drinkName,
+        description,
+        price: Number(price),
+        category: origin,
+        stock: Number(stock),
+        images: images.length > 0 ? images : undefined // Only send if new images uploaded
+      });
+
+      // Cleanup preview URLs
+      previewUrls.forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+      
       onClose();
-    } else {
-      alert("Please fill all fields.");
+    } catch (error) {
+      alert(error.message || "Error updating drink");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,7 +66,11 @@ const EditDrinks = ({ isOpen, onClose, drink }) => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setImages(files.map(file => URL.createObjectURL(file)));
+    setImages(files);
+    
+    // Create and set preview URLs
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
   };
 
   return (
@@ -97,9 +132,9 @@ const EditDrinks = ({ isOpen, onClose, drink }) => {
                 label="Origin"
                 sx={{ color: 'white' }}
               >
-                <MenuItem value="Brazil">Brazil</MenuItem>
-                <MenuItem value="Vietnam">Vietnam</MenuItem>
-                <MenuItem value="Ethiopia">Ethiopia</MenuItem>
+                <MenuItem value="Brazilian">Brazil</MenuItem>
+                <MenuItem value="Vietnamese">Vietnam</MenuItem>
+                <MenuItem value="Ethiopian">Ethiopia</MenuItem>
               </Select>
             </FormControl>
           </Grid>
