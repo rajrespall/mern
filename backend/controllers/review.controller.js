@@ -53,3 +53,20 @@ export const createReview = async (req, res) => {
     res.status(500).json({ message: 'Error creating review', error: error.message });
   }
 };
+
+export const getProductReviews = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    const reviews = await Review.find({ product: productId })
+      .populate('user', 'name profileImage') 
+      .sort({ createdAt: -1 }); 
+    
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error fetching product reviews', 
+      error: error.message 
+    });
+  }
+};

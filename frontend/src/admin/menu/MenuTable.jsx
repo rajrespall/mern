@@ -27,12 +27,10 @@ const MenuTable = () => {
   const { products, fetchProducts } = useProductStore();
 
   useEffect(() => {
-    // Fetch products when component mounts
     fetchProducts();
   }, [fetchProducts]);
 
   useEffect(() => {
-    // Transform products into menu data format when products change
     const transformedData = products.map(product => ({
       id: product._id,
       name: product.name,
@@ -47,7 +45,7 @@ const MenuTable = () => {
 
   const handleOpenAdd = () => {
     setEditingDrink(null);
-    setOpenAddModal(true); // Set openAddModal to true to show the modal
+    setOpenAddModal(true); 
   };
 
   const handleOpenEdit = (drink) => {
