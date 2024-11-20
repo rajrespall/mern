@@ -122,6 +122,7 @@ const MenuTable = () => {
             sx={{ width: 80, height: 60, borderRadius: '4px' }}
           />
         ),
+        sort: false
       },
     },
     { name: 'name', label: 'Item Name' },
@@ -144,12 +145,10 @@ const MenuTable = () => {
               <IconButton onClick={() => handleDelete(rowData.id)} disabled={isLoading}>
                 <DeleteIcon />
               </IconButton>
-              <IconButton onClick={() => handleExpandClick(rowData.id)}>
-                {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
             </div>
           );
-        }
+        },
+        sort: false
       }
     }
   ];
