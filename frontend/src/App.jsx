@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import SignUpPage from "./pages/SignupPage.jsx";
 import LoginPage from "./pages/LoginPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage"; // Add this if you have a main admin dashboard page
 import Home from "./pages/Home.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -12,7 +11,6 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import Menu from "./pages/Menu/MenuPage.jsx";
-// import ProdPage from "./pages/Product/ProdPage.jsx";
 import Feedbacks from "./pages/Feedback/Feedbacks";
 import CartPage from "./pages/Cart/CartPage";
 import Profile from "./pages/Profile";
