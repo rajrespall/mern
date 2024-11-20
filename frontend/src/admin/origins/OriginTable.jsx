@@ -9,6 +9,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AddOrigin from './AddOrigin';
 import EditOrigin from './EditOrigin';
+import Carousel from 'react-material-ui-carousel';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const OriginTable = () => {
@@ -16,6 +17,8 @@ const OriginTable = () => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [openImageDialog, setOpenImageDialog] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
   const [editingOrigin, setEditingOrigin] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
@@ -45,6 +48,11 @@ const OriginTable = () => {
     setExpandedRows((prevState) =>
       prevState.includes(id) ? prevState.filter((item) => item !== id) : [...prevState, id]
     );
+  };
+
+  const handleViewImages = (images) => {
+    setCurrentImages(images);
+    setOpenImageDialog(true);
   };
 
   useEffect(() => {
@@ -92,6 +100,9 @@ const OriginTable = () => {
               <IconButton onClick={() => handleExpandClick(rowData.id)}>
                 {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>
+              <IconButton onClick={() => handleViewImages(rowData.images)}>
+                <img src="/img/view-icon.png" alt="View" style={{ width: 18, height: 18 }} />
+              </IconButton>
             </div>
           );
         }
@@ -134,6 +145,9 @@ const OriginTable = () => {
           <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
             Description: {row.description}
           </Typography>
+          <Button variant="outlined" color="primary" onClick={() => handleViewImages(row.images)} sx={{ mt: 2 }}>
+            View Images
+          </Button>
         </Box>
       );
     },
@@ -227,6 +241,18 @@ const OriginTable = () => {
             },
           }}
         />
+
+        {openImageDialog && (
+          <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)} maxWidth="md" fullWidth>
+            <DialogContent>
+              <Carousel>
+                {currentImages.map((image, index) => (
+                  <img key={index} src={image} alt={`Origin Image ${index}`} style={{ width: '100%' }} />
+                ))}
+              </Carousel>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {openAddModal && (
           <AddOrigin

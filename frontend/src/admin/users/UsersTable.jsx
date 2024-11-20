@@ -3,15 +3,18 @@ import { useSnackbar } from 'notistack';
 import MUIDataTable from 'mui-datatables';
 import { motion } from "framer-motion";
 import { Edit, Search, Trash2 } from "lucide-react";
-import { Button, IconButton, CardMedia } from "@mui/material";
+import { Button, IconButton, CardMedia, Dialog, DialogContent, Typography, Box } from "@mui/material";
 import AddUser from "./AddUser"; // Import your AddUser component
 import EditUser from "./EditUser"; // Import your EditUser component
+import Carousel from 'react-material-ui-carousel';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const USERS_DATA = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", password: "password123", profilePicture: null },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", password: "securepass", profilePicture: null },
-  { id: 3, name: "Alice Johnson", email: "alice@example.com", role: "Editor", password: "alicepass456", profilePicture: null },
+  { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", password: "password123", profilePicture: null, images: ['/img/admin.png'] },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", password: "securepass", profilePicture: null, images: ['/img/admin.png'] },
+  { id: 3, name: "Alice Johnson", email: "alice@example.com", role: "Editor", password: "alicepass456", profilePicture: null, images: ['/img/admin.png'] },
 ];
 
 const UsersTable = () => {
@@ -21,6 +24,9 @@ const UsersTable = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [openImageDialog, setOpenImageDialog] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSearch = (e) => {
@@ -67,67 +73,60 @@ const UsersTable = () => {
     enqueueSnackbar('User deleted successfully!', { variant: 'success' });
   };
 
+  const handleExpandClick = (id) => {
+    setExpandedRows((prevState) =>
+      prevState.includes(id) ? prevState.filter((item) => item !== id) : [...prevState, id]
+    );
+  };
+
+  const handleViewImages = (images) => {
+    setCurrentImages(images);
+    setOpenImageDialog(true);
+  };
+
   const columns = [
+    { name: 'id', label: 'ID' },
     {
-      name: "Profile",
-      label: "Profile",
+      name: 'profilePicture',
+      label: 'Profile',
+      options: {
+        customBodyRender: (profilePicture) => (
+          <CardMedia
+            component="img"
+            image={profilePicture ? URL.createObjectURL(profilePicture) : "/img/admin.png"} // Default image if no picture
+            alt="Profile"
+            sx={{ width: 40, height: 40, borderRadius: '50%', marginRight: 2 }}
+          />
+        ),
+      },
+    },
+    { name: 'name', label: 'Name' },
+    { name: 'email', label: 'Email' },
+    { name: 'role', label: 'Role' },
+    { name: 'password', label: 'Password' },
+    {
+      name: 'actions',
+      label: 'Actions',
       options: {
         customBodyRender: (value, tableMeta) => {
-          const row = filteredUsers[tableMeta.rowIndex];
-          return (
-            <div className="flex items-center">
-              <CardMedia
-                component="img"
-                image={row.profilePicture ? URL.createObjectURL(row.profilePicture) : "/img/admin.png"} // Default image if no picture
-                alt="Profile"
-                sx={{ width: 40, height: 40, borderRadius: '50%', marginRight: 2 }}
-              />
-              <span>{row.name}</span> {/* Display the name next to the profile picture */}
-            </div>
-          );
-        },
-      },
-    },
-    {
-      name: "email",
-      label: "Email",
-      options: {
-        sort: true,
-      },
-    },
-    {
-      name: "role",
-      label: "Role",
-      options: {
-        sort: true,
-      },
-    },
-    {
-      name: "password",
-      label: "Password",
-      options: {
-        sort: true,
-      },
-    },
-    {
-      name: "actions",
-      label: "Actions",
-      options: {
-        customBodyRender: (value, tableMeta) => {
-          const row = filteredUsers[tableMeta.rowIndex];
+          const rowIndex = tableMeta.rowIndex;
+          const rowData = filteredUsers[rowIndex];
           return (
             <div className="flex gap-2">
               <IconButton
                 className="text-indigo-400 hover:text-indigo-300"
-                onClick={() => handleEditClick(row)}
+                onClick={() => handleEditClick(rowData)}
               >
                 <Edit size={18} />
               </IconButton>
               <IconButton
                 className="text-red-400 hover:text-red-300"
-                onClick={() => handleDeleteClick(row.id)}
+                onClick={() => handleDeleteClick(rowData.id)}
               >
                 <Trash2 size={18} />
+              </IconButton>
+              <IconButton onClick={() => handleExpandClick(rowData.id)}>
+                {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>
             </div>
           );
@@ -141,6 +140,45 @@ const UsersTable = () => {
     onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
       setSelectedRows(allRowsSelected.map((row) => row.dataIndex));
     },
+    expandableRows: true,
+    renderExpandableRow: (rowData) => {
+      const row = filteredUsers.find((user) => user.id === rowData[0]);
+      return (
+        <Box
+          key={row.id}
+          sx={{
+            width: '450%',
+            maxWidth: '1000px',
+            paddingTop: '12px',
+            paddingLeft: '50px',
+            paddingRight: '20px',
+            paddingBottom: '10px',
+            bgcolor: '#1b2433',
+            color: '#fff',
+            borderRadius: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+            {row.name}
+          </Typography>
+          <Typography variant="body1">ID: {row.id}</Typography>
+          <Typography variant="body1">Email: {row.email}</Typography>
+          <Typography variant="body1">Role: {row.role}</Typography>
+          <Typography variant="body1">Password: {row.password}</Typography>
+          <Button variant="outlined" color="primary" onClick={() => handleViewImages(row.images)} sx={{ mt: 2 }}>
+            View Images
+          </Button>
+        </Box>
+      );
+    },
+    customToolbarSelect: () => (
+      <Button variant="contained" color="error" onClick={() => handleBulkDelete()}>
+        Delete Selected Users
+      </Button>
+    ),
     responsive: 'standard',
     pagination: true,
     filterType: 'checkbox',
@@ -227,6 +265,18 @@ const UsersTable = () => {
             },
           }}
         />
+
+        {openImageDialog && (
+          <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)} maxWidth="md" fullWidth>
+            <DialogContent>
+              <Carousel>
+                {currentImages.map((image, index) => (
+                  <img key={index} src={image} alt={`User Image ${index}`} style={{ width: '100%' }} />
+                ))}
+              </Carousel>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* AddUser component */}
         {openAdd && (
