@@ -12,8 +12,6 @@ export const useAuthStore = create((set) => ({
 	isLoading: false,
 	isCheckingAuth: true,
 	message: null,
-
-	// Determine user role: 'admin' or 'customer' or null if not authenticated
 	role: null,
 
 	signup: async (email, password, name) => {
@@ -31,6 +29,7 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
 	login: async (email, password) => {
 		set({ isLoading: true, error: null });
 		try {
@@ -58,6 +57,7 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
 	verifyEmail: async (code) => {
 		set({ isLoading: true, error: null });
 		try {
@@ -97,7 +97,6 @@ export const useAuthStore = create((set) => ({
 		}
 	},
 
-
 	forgotPassword: async (email) => {
 		set({ isLoading: true, error: null });
 		try {
@@ -111,6 +110,7 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
 	resetPassword: async (token, password) => {
 		set({ isLoading: true, error: null });
 		try {

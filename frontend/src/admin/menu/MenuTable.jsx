@@ -24,7 +24,7 @@ const MenuTable = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
 
-  const { products, fetchProducts, deleteProduct, isLoading } = useProductStore();
+  const { products, fetchProducts, deleteProduct, bulkDeleteProducts, isLoading } = useProductStore();
 
   useEffect(() => {
     fetchProducts();
@@ -64,15 +64,23 @@ const MenuTable = () => {
   };
 
   const handleBulkDelete = async () => {
-    try {
-      // Delete selected products sequentially
-      await Promise.all(selectedRows.map(id => deleteProduct(id)));
-      setSelectedRows([]); 
-      enqueueSnackbar('Selected drinks deleted successfully!', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar(error.message || 'Error deleting drinks', { variant: 'error' });
+  try {
+    if (!selectedRows.length) {
+      enqueueSnackbar('Please select items to delete', { variant: 'warning' });
+      return;
     }
-  };
+
+    const confirmed = window.confirm(`Are you sure you want to delete ${selectedRows.length} items?`);
+    if (!confirmed) return;
+
+    await bulkDeleteProducts(selectedRows);
+    setSelectedRows([]);
+    enqueueSnackbar('Items deleted successfully', { variant: 'success' });
+    
+  } catch (error) {
+    enqueueSnackbar(error.message || 'Error deleting items', { variant: 'error' });
+  }
+};
 
   const handleExpandClick = (id) => {
     setExpandedRows((prevState) =>
@@ -134,7 +142,8 @@ const MenuTable = () => {
   const options = {
     selectableRows: 'multiple', // Allow multiple row selection
     onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
-      setSelectedRows(allRowsSelected.map((row) => row.dataIndex)); // Get selected rows' IDs
+      const selectedIds = allRowsSelected.map(row => products[row.dataIndex]._id);
+      setSelectedRows(selectedIds); // Get selected rows' IDs
     },
     expandableRows: true,
     renderExpandableRow: (rowData) => {

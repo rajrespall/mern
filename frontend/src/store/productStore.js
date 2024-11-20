@@ -112,6 +112,22 @@ const useProductStore = create((set) => ({
       set({ error: error.message, isLoading: false });
       throw error;
     }
+  },
+
+  //bulk delete products
+  bulkDeleteProducts: async (ids) => {
+    set({ isLoading: true });
+    try {
+      await axios.post('http://localhost:5000/api/products/bulk-delete', { ids });
+      
+      set(state => ({
+        products: state.products.filter(product => !ids.includes(product._id)),
+        isLoading: false 
+      }));
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
+      throw error;
+    }
   }
 }));
 

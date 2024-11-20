@@ -159,3 +159,40 @@ export const deleteProduct = async (req, res) => {
     });
   }
 };
+
+export const bulkDeleteProducts = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    // Fetch all products to be deleted
+    const products = await Product.find({ _id: { $in: ids } });
+    
+    // Delete images from cloudinary
+    const deletePromises = products.flatMap(product => 
+      product.images.map(image => {
+        if (image.cloudinary_id) {
+          return cloudinary.uploader.destroy(image.cloudinary_id);
+        }
+        return Promise.resolve();
+      })
+    );
+
+    await Promise.all(deletePromises);
+    
+    // Delete products from database
+    await Product.deleteMany({ _id: { $in: ids } });
+
+    res.status(200).json({
+      success: true,
+      message: "Products deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error bulk deleting products:", error);
+    res.status(500).json({
+      success: false, 
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
