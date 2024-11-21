@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import avatar from "../assets/img/profile.png"; 
 import toast, { Toaster } from "react-hot-toast";
 import useProfileStore from "../store/profileStore";
+import useOrderStore from "../store/orderStore";
 
 const Profile = () => {
-  const { profile, loading, error, fetchProfile, updateProfile } = useProfileStore();
+  const { profile, loading: profileLoading, error: profileError, fetchProfile, updateProfile } = useProfileStore();
+  const { orders, loading: ordersLoading, error: ordersError, fetchUserOrders } = useOrderStore();
   const [file, setFile] = useState(null); // State for uploaded image
   const [firstName, setFirstName] = useState(""); // Example existing data
   const [lastName, setLastName] = useState("");
@@ -12,15 +14,10 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
 
-  const [previousOrders, setPreviousOrders] = useState([
-    { id: 1, date: "2024-09-01", item: "Cappuccino", quantity: 2, price: 120, totalPrice: 240, image: avatar },
-    { id: 2, date: "2024-09-15", item: "Latte", quantity: 1, price: 150, totalPrice: 150, image: avatar },
-    { id: 3, date: "2024-10-01", item: "Espresso", quantity: 3, price: 100, totalPrice: 300, image: avatar },
-  ]);
-
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]);
+    fetchUserOrders();
+  }, [fetchProfile, fetchUserOrders]);
 
   useEffect(() => {
     if (profile) {
@@ -49,8 +46,9 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (profileLoading || ordersLoading) return <div>Loading...</div>;
+  if (profileError) return <div>Error: {profileError}</div>;
+  if (ordersError) return <div>Error: {ordersError}</div>;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#fffdf9] to-[#134278] pt-24 pb-20">
@@ -133,23 +131,30 @@ const Profile = () => {
             {/* Table Header */}
             <div className="grid grid-cols-4 gap-4 text-center font-semibold border-b mb-2">
               <span>Date</span>
-              <span>Item</span>
-              <span>Quantity</span>
+              <span>Items</span>
+              <span>Status</span>
               <span>Total Price</span>
             </div>
 
             {/* Order Items */}
-            {previousOrders.map(order => (
-              <div key={order.id} className="grid grid-cols-4 gap-4 items-center border-b py-2">
-                <span className="text-center">{order.date}</span>
-                <div className="flex items-center">
-                  <img src={order.image} alt={order.item} className="w-12 h-12 rounded mr-2" />
-                  <span>{order.item}</span>
+            {orders && orders.length > 0 ? (
+              orders.map(order => (
+                <div key={order._id} className="grid grid-cols-4 gap-4 items-center border-b py-2">
+                  <span className="text-center">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </span>
+                  <div className="flex items-center justify-center">
+                  <span>
+                    {order.orderItems?.map(item => item.product?.name).join(', ')}
+                  </span>
+                  </div>
+                  <span className="text-center">{order.orderStatus}</span>
+                  <span className="text-center">${order.totalPrice?.toFixed(2)}</span>
                 </div>
-                <span className="text-center">{order.quantity}</span>
-                <span className="text-center">{order.totalPrice}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="text-center py-4 text-gray-500">No orders found</div>
+            )}
           </div>
         </div>
       </div>
