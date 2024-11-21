@@ -1,7 +1,7 @@
 // frontend/src/pages/Feedback/Feedbacks.jsx
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaEdit } from 'react-icons/fa';
 import useReviewStore from "../../store/reviewStore";
 import StarRating from "./StarRating";
 
@@ -12,7 +12,8 @@ const Feedback = () => {
     isLoading, 
     fetchUnreviewedProducts, 
     fetchUserReviews, 
-    createReview 
+    createReview,
+    updateReview
   } = useReviewStore();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -20,7 +21,36 @@ const Feedback = () => {
   const [reviewText, setReviewText] = useState("");
   const [reviewImages, setReviewImages] = useState([]);
   const [showPostedReviews, setShowPostedReviews] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editText, setEditText] = useState('');
+  const [editImages, setEditImages] = useState([]);
 
+  const handleEditClick = (review) => {
+    setEditingReview(review);
+    setEditRating(review.rating);
+    setEditText(review.text);
+    setEditImages([]);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateReview(editingReview._id, {
+        rating: editRating,
+        text: editText,
+        images: editImages
+      });
+      
+      toast.success("Review updated successfully!");
+      setEditingReview(null);
+      setEditRating(0);
+      setEditText('');
+      setEditImages([]);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update review");
+    }
+  };
   useEffect(() => {
     fetchUnreviewedProducts().catch(err => 
       toast.error(err.response?.data?.message || "Failed to fetch products")
@@ -176,28 +206,86 @@ const Feedback = () => {
             ) : (
               <div className="space-y-4">
                 {userReviews.map((review) => (
-                  <div key={review._id} className="border-b pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold">{review.product?.name}</h3>
-                      <span className="text-sm text-gray-500">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="mb-2">
-                      <StarRating rating={review.rating} readOnly />
-                    </div>
-                    <p className="text-gray-700">{review.text}</p>
-                    {review.images?.length > 0 && (
-                      <div className="flex gap-2 mt-2">
-                        {review.images.map((image, index) => (
-                          <img
-                            key={index}
-                            src={image.url}
-                            alt={`Review ${index + 1}`}
-                            className="w-20 h-20 object-cover rounded"
-                          />
+                <div key={review._id} className="border-b pb-4">
+                  {editingReview?._id === review._id ? (
+                    <form onSubmit={handleEditSubmit} className="space-y-4">
+                      <div>
+                        <label className="block mb-2 font-medium">Rating</label>
+                        <StarRating rating={editRating} setRating={setEditRating} />
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 font-medium">Review</label>
+                        <textarea
+                          className="w-full p-2 border rounded"
+                          rows="4"
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 font-medium">New Images (Optional)</label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => setEditImages(Array.from(e.target.files))}
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-[#0c3a6d] text-white rounded hover:bg-[#0a2e5a]"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Saving..." : "Save Changes"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingReview(null)}
+                          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold">{review.product?.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </span>
+                          <button
+                            onClick={() => handleEditClick(review)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <FaEdit size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mb-2">
+                        <StarRating rating={review.rating} readOnly />
+                      </div>
+                      <p className="text-gray-700">{review.text}</p>
+                      {review.images?.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {review.images.map((image, index) => (
+                            <img
+                              key={index}
+                              src={image.url}
+                              alt={`Review ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded"
+                            />
                         ))}
                       </div>
+                    )}
+                    </>
                     )}
                   </div>
                 ))}

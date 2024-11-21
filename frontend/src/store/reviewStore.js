@@ -96,6 +96,48 @@ const useReviewStore = create((set) => ({
       throw error;
     }
   },
+
+  updateReview: async (reviewId, reviewData) => {
+    set({ isLoading: true });
+    try {
+      const formData = new FormData();
+      formData.append('rating', reviewData.rating);
+      formData.append('text', reviewData.text);
+      
+      if (reviewData.images) {
+        reviewData.images.forEach(image => {
+          formData.append('images', image);
+        });
+      }
+  
+      const response = await axios.put(
+        `http://localhost:5000/api/reviews/${reviewId}`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+  
+      // Update userReviews state
+      set(state => ({
+        userReviews: state.userReviews.map(review =>
+          review._id === reviewId ? response.data : review
+        ),
+        isLoading: false
+      }));
+  
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Error updating review',
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
 }));
 
 export default useReviewStore;
