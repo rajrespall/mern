@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import avatar from "../assets/img/profile.png"; 
 import toast, { Toaster } from "react-hot-toast";
+import useProfileStore from "../store/profileStore";
 
 const Profile = () => {
-  const [file, setFile] = useState(); // State for uploaded image
-  const [firstName, setFirstName] = useState("Wrath"); // Example existing data
-  const [lastName, setLastName] = useState("Boh");
-  const [mobile, setMobile] = useState("1234567890");
-  const [email, setEmail] = useState("wrathboh@example.com");
-  const [address, setAddress] = useState("123 Main St");
+  const { profile, loading, error, fetchProfile, updateProfile } = useProfileStore();
+  const [file, setFile] = useState(null); // State for uploaded image
+  const [firstName, setFirstName] = useState(""); // Example existing data
+  const [lastName, setLastName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
 
   const [previousOrders, setPreviousOrders] = useState([
     { id: 1, date: "2024-09-01", item: "Cappuccino", quantity: 2, price: 120, totalPrice: 240, image: avatar },
@@ -16,18 +18,39 @@ const Profile = () => {
     { id: 3, date: "2024-10-01", item: "Espresso", quantity: 3, price: 100, totalPrice: 300, image: avatar },
   ]);
 
-  // Dummy form submit handler
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setMobile(profile.contactNo || "");
+      setEmail(profile.user.email || "");
+      setAddress(profile.address || "");
+    }
+  }, [profile]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success("Profile updated successfully!");
+    try {
+      await updateProfile({ firstName, lastName, contactNo: mobile, address, profileImage: file });
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const onUpload = (e) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile) {
-      setFile(URL.createObjectURL(uploadedFile)); 
+      setFile(uploadedFile);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#fffdf9] to-[#134278] pt-24 pb-20">
@@ -44,7 +67,7 @@ const Profile = () => {
             <div className="flex justify-center py-4">
               <label htmlFor="profile">
                 <img
-                  src={file || avatar}
+                  src={file ? URL.createObjectURL(file) : profile?.profileImage?.url || avatar}
                   className="w-32 h-32 rounded-full border-2 border-gray-300"
                   alt="avatar"
                 />
@@ -77,13 +100,6 @@ const Profile = () => {
                   placeholder="Mobile No."
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
-                />
-                <input
-                  className="border rounded-md p-2 w-full"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
