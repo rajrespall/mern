@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Profile } from "../models/profile.model.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 // import admin from "../utils/firebase.js";
@@ -26,8 +27,17 @@ export const signup= async (req, res) => {
             verificationToken: verificationToken,
             verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000 //24 hours
         })
-
         await user.save();
+
+        const [firstName, lastName] = name.split(' ');
+        const profile = new Profile({
+            user: user._id,
+            firstName: firstName || name,
+            lastName: lastName || '',
+            contactNo: '',
+            address: ''
+        });
+        await profile.save();
 
         generateTokenandSetCookie(res, user._id);
 
