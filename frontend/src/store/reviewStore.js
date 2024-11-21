@@ -8,6 +8,9 @@ const useReviewStore = create((set) => ({
   isLoading: false,
   unreviewedProducts: [],
   userReviews: [],
+  allReviews: [],
+  stats: null,
+  pagination: null,
 
   fetchProductReviews: async (productId) => {
     set({ isLoading: true });
@@ -138,6 +141,40 @@ const useReviewStore = create((set) => ({
       throw error;
     }
   },
+
+  fetchAllReviews: async (page = 1, limit = 10, sortField = 'createdAt', sortOrder = 'desc', rating = null) => {
+    set({ isLoading: true });
+    try {
+      const params = new URLSearchParams({
+        page,
+        limit,
+        sortField,
+        sortOrder,
+        ...(rating && { rating })
+      });
+
+      const response = await axios.get(`http://localhost:5000/api/reviews/admin/all?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      set({ 
+        allReviews: response.data.reviews,
+        stats: response.data.stats,
+        pagination: response.data.pagination,
+        isLoading: false 
+      });
+
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Error fetching all reviews',
+        isLoading: false 
+      });
+      throw error;
+    }
+  }
 }));
 
 export default useReviewStore;
