@@ -7,6 +7,7 @@ const useReviewStore = create((set) => ({
   error: null,
   isLoading: false,
   unreviewedProducts: [],
+  userReviews: [],
 
   fetchProductReviews: async (productId) => {
     set({ isLoading: true });
@@ -75,7 +76,26 @@ const useReviewStore = create((set) => ({
       });
       throw error;
     }
-  }
+  },
+  
+  fetchUserReviews: async () => {
+    set({ isLoading: true });
+    try {
+      const response = await axios.get('http://localhost:5000/api/reviews/user', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      set({ userReviews: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Error fetching user reviews',
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
 }));
 
 export default useReviewStore;

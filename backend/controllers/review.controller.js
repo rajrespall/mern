@@ -118,3 +118,19 @@ export const getUnreviewedProducts = async (req, res) => {
     });
   }
 };
+
+export const getUserReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find({ user: req.userId })
+      .populate('product', 'name')
+      .populate('user', 'name profileImage')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error fetching user reviews', 
+      error: error.message 
+    });
+  }
+};
