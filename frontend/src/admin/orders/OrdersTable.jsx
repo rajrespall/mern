@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Eye } from "lucide-react";
+import useOrderStore from "../../store/orderStore";
 
 const orderData = [
 	{ id: "ORD001", customer: "John Doe", total: 235.4, status: "Delivered", date: "2023-07-01" },
@@ -15,7 +16,18 @@ const orderData = [
 
 const OrdersTable = () => {
 	const [searchTerm, setSearchTerm] = useState("");
-	const [filteredOrders, setFilteredOrders] = useState(orderData);
+	const [filteredOrders, setFilteredOrders] = useState([]);
+	const { orders, loading, fetchAllOrders } = useOrderStore();
+
+	useEffect(() => {
+		fetchAllOrders();
+	}, [fetchAllOrders]);
+
+	useEffect(() => {
+		if (orders.length > 0) {
+		  setFilteredOrders(orders);
+		}
+	}, [orders]);
 
 	const handleSearch = (e) => {
 		const term = e.target.value.toLowerCase();
@@ -26,6 +38,9 @@ const OrdersTable = () => {
 		setFilteredOrders(filtered);
 	};
 
+	if (loading) {
+		return <div>Loading orders...</div>;
+	}
 	return (
 		<motion.div
 			className='bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700'
@@ -75,36 +90,36 @@ const OrdersTable = () => {
 					<tbody className='divide divide-gray-700'>
 						{filteredOrders.map((order) => (
 							<motion.tr
-								key={order.id}
+								key={order._id}
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ duration: 0.3 }}
 							>
 								<td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-									{order.id}
+									{order._id}
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-									{order.customer}
+									{order.user.name}
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-									${order.total.toFixed(2)}
+									${order.totalPrice.toFixed(2)}
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
 									<span
 										className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-											order.status === "Delivered"
+											order.orderStatus === "Delivered"
 												? "bg-green-100 text-green-800"
-												: order.status === "Processing"
+												: order.orderStatus === "Processing"
 												? "bg-yellow-100 text-yellow-800"
-												: order.status === "Shipped"
+												: order.orderStatus === "Shipped"
 												? "bg-blue-100 text-blue-800"
 												: "bg-red-100 text-red-800"
 										}`}
 									>
-										{order.status}
+										{order.orderStatus}
 									</span>
 								</td>
-								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{order.date}</td>
+								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{new Date(order.createdAt).toLocaleDateString()}</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
 									<button className='text-indigo-400 hover:text-indigo-300 mr-2'>
 										<Eye size={18} />

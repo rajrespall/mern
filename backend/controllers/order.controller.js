@@ -54,7 +54,6 @@ export const checkout = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 // Update the status of an order
 export const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
@@ -75,7 +74,6 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 // Get all orders for a user
 export const getUserOrders = async (req, res) => {
     const userId = req.userId; // Use req.userId set by the middleware
@@ -92,3 +90,30 @@ export const getUserOrders = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
+// Get all orders
+export const getAllOrders = async (req, res) => {
+    try {
+      const orders = await Order.find()
+        .populate('user', 'name email')
+        .populate('orderItems.product', 'name price')
+        .sort({ createdAt: -1 });
+  
+      // Calculate total amount of all orders
+      const totalAmount = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+  
+      const orderStats = {
+        totalOrders: orders.length,
+        totalAmount,
+        pending: orders.filter(order => order.orderStatus === 'Processing').length,
+        delivered: orders.filter(order => order.orderStatus === 'Delivered').length,
+      };
+  
+      res.status(200).json({
+        success: true,
+        stats: orderStats,
+        orders
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
