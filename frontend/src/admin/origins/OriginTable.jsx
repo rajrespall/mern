@@ -55,9 +55,6 @@ const OriginTable = () => {
       options: {
         customBodyRender: (value, tableMeta) => (
           <Box>
-            <IconButton onClick={() => handleEdit(tableMeta.rowData)}>
-              <EditIcon />
-            </IconButton>
             <IconButton onClick={() => handleDelete(tableMeta.rowData)}>
               <DeleteIcon />
             </IconButton>
@@ -105,17 +102,6 @@ const OriginTable = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ p: 3 }}>
-        {stats && (
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 3 }}>
-            <StatCard title="Total Reviews" value={stats.totalReviews} />
-            <StatCard title="Average Rating" value={stats.averageRating} />
-            <StatCard 
-              title="5★ Reviews" 
-              value={stats.ratingDistribution.find(r => r._id === 5)?.count || 0} 
-            />
-          </Box>
-        )}
-
         <MUIDataTable
           title="Reviews Management"
           data={allReviews}
