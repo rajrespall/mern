@@ -8,3 +8,9 @@ const fileFilter = (req, file, cb) => {
 };
 
 export const upload = multer({ storage, fileFilter }).array('images', 10); // Adjust the field name and max count as needed
+
+export const uploadProfileImage = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+}).single('profileImage'); // Specific field name for profile image

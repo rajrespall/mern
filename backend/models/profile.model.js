@@ -22,6 +22,10 @@ const ProfileSchema = new mongoose.Schema({
   address: {
     type: String,
     required: true
+  },
+  profileImage: {
+    url: String,
+    cloudinary_id: String
   }
 }, { timestamps: true });
 

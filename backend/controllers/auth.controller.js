@@ -35,7 +35,8 @@ export const signup= async (req, res) => {
             firstName: firstName || name,
             lastName: lastName || '',
             contactNo: '',
-            address: ''
+            address: '',
+            profileImage: {url: '', publicId: ''},
         });
         await profile.save();
 
