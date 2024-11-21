@@ -1,23 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AiOutlineMinus, AiOutlinePlus, AiOutlineDelete, AiOutlineFilePdf, AiOutlineFileExcel } from "react-icons/ai";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
+import useCartStore from "../../store/cartStore";
 
 const CartPage = () => {
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Espresso", price: 120, quantity: 1, imageUrl: "https://via.placeholder.com/100" },
-        { id: 2, name: "Cappuccino", price: 150, quantity: 2, imageUrl: "https://via.placeholder.com/100" },
-        { id: 3, name: "Latte", price: 180, quantity: 1, imageUrl: "https://via.placeholder.com/100" },
-    ]);
-
+    const { cartItems, loading, fetchCart, updateQuantity, removeItem } = useCartStore();
     const [selectedItems, setSelectedItems] = useState([]);
     const [userInfo, setUserInfo] = useState({
         name: "John Doe",
         address: "123 Coffee St, Brewtown, CA 12345",
     });
-
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
+
+     // Fetch cart on component mount
+     useEffect(() => {
+        fetchCart();
+    }, [fetchCart]);
 
     const calculateTotal = () => {
         return selectedItems.reduce((total, id) => {
@@ -39,15 +39,12 @@ const CartPage = () => {
         );
     };
 
-    const updateQuantity = (id, change) => {
-        setCartItems(prevItems =>
-            prevItems.map(item =>
-                item.id === id ? { ...item, quantity: Math.max(item.quantity + change, 1) } : item
-            )
-        );
+    const handleUpdateQuantity = async (id, change, currentQuantity) => {
+        const newQuantity = Math.max(currentQuantity + change, 1);
+        await updateQuantity(id, newQuantity);
     };
 
-    const removeItem = (id) => {
+    const handleremoveItem = (id) => {
         setCartItems(prevItems => prevItems.filter(item => item.id !== id));
     };
 
@@ -105,6 +102,9 @@ const CartPage = () => {
         XLSX.writeFile(workbook, "receipt.xlsx");
     };
 
+    if (loading) {
+        return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
+    }
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-[#fffdf9] to-[#134278]">
             <div className="flex flex-col lg:flex-row justify-center gap-5">
@@ -125,31 +125,31 @@ const CartPage = () => {
                             </thead>
                             <tbody>
                                 {cartItems.map((item) => (
-                                    <tr key={item.id} className="border-b border-gray-300">
+                                    <tr key={item._id} className="border-b border-gray-300">
                                         <td className="py-3">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedItems.includes(item.id)}
-                                                onChange={() => toggleSelectItem(item.id)}
+                                                checked={selectedItems.includes(item._id)}
+                                                onChange={() => toggleSelectItem(item._id)}
                                             />
                                         </td>
                                         <td className="py-3 flex items-center">
-                                            <img src={item.imageUrl} alt={item.name} className="w-16 h-16 mr-4" />
+                                            <img src={item.product.images[0].url} alt={item.product.name} className="w-16 h-16 mr-4" />
                                             <div>
-                                                <span>{item.name}</span>
+                                                <span>{item.product.name}</span>
                                                 <div className="flex items-center mt-1">
-                                                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1">
+                                                    <button onClick={() => handleUpdateQuantity(item.product._id, -1, item.quantity)} className="p-1">
                                                         <AiOutlineMinus />
                                                     </button>
                                                     <span className="mx-2">{item.quantity}</span>
-                                                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1">
+                                                    <button onClick={() => handleUpdateQuantity(item.product._id, 1, item.quantity)} className="p-1">
                                                         <AiOutlinePlus />
                                                     </button>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-3">₱{item.price}</td>
-                                        <td className="py-3">₱{(item.price * item.quantity).toFixed(2)}</td>
+                                        <td className="py-3">₱{item.product.price}</td>
+                                        <td className="py-3">₱{(item.product.price * item.quantity).toFixed(2)}</td>
                                         <td className="py-3 text-red-500 cursor-pointer" onClick={() => removeItem(item.id)}>
                                             <AiOutlineDelete />
                                         </td>
