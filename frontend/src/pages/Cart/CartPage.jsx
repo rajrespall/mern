@@ -44,9 +44,16 @@ const CartPage = () => {
         await updateQuantity(id, newQuantity);
     };
 
-    const handleremoveItem = (id) => {
-        setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-    };
+    const handleRemoveItem = async (productId) => {
+        try {
+          await removeItem(productId);
+          // Also remove from selected items if it was selected
+          setSelectedItems(prev => prev.filter(id => id !== productId));
+        } catch (error) {
+          console.error("Error removing item:", error);
+          // You could add a toast notification here
+        }
+      };
 
     const handleAddressChange = (e) => {
         setUserInfo({ ...userInfo, address: e.target.value });
@@ -150,7 +157,7 @@ const CartPage = () => {
                                         </td>
                                         <td className="py-3">₱{item.product.price}</td>
                                         <td className="py-3">₱{(item.product.price * item.quantity).toFixed(2)}</td>
-                                        <td className="py-3 text-red-500 cursor-pointer" onClick={() => removeItem(item.id)}>
+                                        <td className="py-3 text-red-500 cursor-pointer" onClick={() => handleRemoveItem(item.product._id)}>
                                             <AiOutlineDelete />
                                         </td>
                                     </tr>
