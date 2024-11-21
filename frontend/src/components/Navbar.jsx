@@ -14,7 +14,7 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false); // Logging out state
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { logout, isAuthenticated } = useAuthStore();
 
   const handleChange = () => {
     setMenu(!menu);
@@ -87,6 +87,9 @@ const Navbar = () => {
           <AiOutlineSearch size={30} className="cursor-pointer hover:text-blue-200" onClick={toggleSearchBar} />
 
           {/* Profile Picture Icon with Dropdown */}
+          
+          {isAuthenticated ? (
+          // Show profile picture and dropdown when logged in
           <div className="relative">
             <img
               src={profilePic}
@@ -111,19 +114,15 @@ const Navbar = () => {
               </div>
             )}
           </div>
-
-          {/* Sign In Button */}
+        ) : (
+          // Show sign in button when logged out
           <RouterLink to="/signup" className="hover:text-blue-200 transition-all cursor-pointer">
-            <button
-              className="px-6 py-1 border-2 border-white bg-[#0c3a6d] text-white hover:text-[#8b98a7] transition-all rounded-full"
-              onClick={() => console.log('Sign In button clicked')}
-            >
+            <button className="px-6 py-1 border-2 border-white bg-[#0c3a6d] text-white hover:text-[#8b98a7] transition-all rounded-full">
               Sign In
             </button>
           </RouterLink>
-
-
-        </div>
+        )}
+      </div>
 
         <div className="md:hidden flex items-center">
           {menu ? (
