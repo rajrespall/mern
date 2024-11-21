@@ -1,36 +1,30 @@
 import React, { useState } from 'react';
 import { FaCartPlus } from 'react-icons/fa';
+import useCartStore from '../../store/cartStore';
 
 const OrderDetailsModal = ({ isOpen, onClose, onCartClose, orderDetails }) => {
-  // Check if orderDetails is valid
-  if (!isOpen) return null;
-  if (!orderDetails) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-5 rounded-lg w-128 relative">
-          <h2 className="text-lg font-bold mb-4">No Order Details Available</h2>
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-            aria-label="Close order details"
-          >
-            <span className="text-xl">✖</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const [isConfirming, setIsConfirming] = useState(false); // State for order confirmation
+  const { addToCart } = useCartStore();
 
-  const handleCartClose = () => {
-    setIsConfirming(true); // Show confirmation state
-    setTimeout(() => {
-      setIsConfirming(false); // Reset state after a brief delay
-      onClose(); // Close the order details modal
-      onCartClose(); // Close the cart modal
-    }, 1000); // Adjust timing as needed
+  const handleCartClose = async () => {
+    try {
+      setIsConfirming(true);
+      
+      // Add to cart with product ID and quantity
+      await addToCart(orderDetails.productId, orderDetails.quantity);
+
+      setTimeout(() => {
+        setIsConfirming(false);
+        onClose();
+        onCartClose();
+      }, 1000);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setIsConfirming(false);
+    }
   };
+
+  if (!isOpen || !orderDetails) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

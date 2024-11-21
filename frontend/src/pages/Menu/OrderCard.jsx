@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaCoffee, FaMugHot, FaGlassWhiskey, FaStar, FaTimes } from "react-icons/fa";
 import OrderDetailsModal from "./OrderDetailsModal"; 
 
-const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "$12.99" }) => {
+const CartCard = ({ isOpen, onClose, product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [temperature, setTemperature] = useState("hot");
   const [size, setSize] = useState("small");
@@ -20,10 +20,12 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
   };
 
   const handleImageClick = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    if (product?.images?.length > 1) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % product.images.length);
+    }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !product) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -37,8 +39,8 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
         <div className="flex-none mr-4">
           <div className="w-64 h-64 overflow-hidden rounded-lg cursor-pointer" onClick={handleImageClick}>
             <img
-              src={images[currentImageIndex]}
-              alt={title}
+              src={product.images?.[currentImageIndex]?.url || product.images?.[0]?.url}
+              alt={product.name}
               className="w-full h-full object-cover transition-transform duration-300"
               style={{ display: 'block' }}
             />
@@ -46,36 +48,26 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
 
           {/* Item Details: Title, Rating, and Price */}
           <div className="mt-2 text-center">
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <div className="flex items-center justify-center gap-1 text-yellow-500 mt-1">
-              {[...Array(Math.floor(rating))].map((_, index) => (
-                <FaStar key={index} />
-              ))}
-              {rating % 1 !== 0 && <FaStar style={{ color: '#ffcc00' }} />}
-              <span className="text-sm text-gray-500 ml-1">({rating})</span>
-            </div>
-            <div className="text-lg font-bold text-gray-800 mt-1">{price}</div>
+            <h3 className="text-lg font-semibold">{product.name}</h3>
+            <div className="text-lg font-bold text-gray-800 mt-1">₱{product.price}</div>
           </div>
         </div>
 
-        {/* Right Side: Customization */}
         <div className="flex-1">
-          {/* Temperature Selection */}
           <div className="mt-4">
             <label className="block mb-2">Select Temperature:</label>
             <div className="flex">
-              <button
-                onClick={() => setTemperature("hot")}
-                className={`px-4 py-2 rounded-lg ${temperature === "hot" ? "bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "bg-gray-200"}`}
-              >
-                Hot
-              </button>
-              <button
-                onClick={() => setTemperature("cold")}
-                className={`px-4 py-2 rounded-lg ${temperature === "cold" ? "bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "bg-gray-200"}`}
-              >
-                Cold
-              </button>
+              {["hot", "cold"].map((temp) => (
+                <button
+                  key={temp}
+                  onClick={() => setTemperature(temp)}
+                  className={`px-4 py-2 rounded-lg ${
+                    temperature === temp ? "bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "bg-gray-200"
+                  }`}
+                >
+                  {temp.charAt(0).toUpperCase() + temp.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -83,27 +75,24 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
           <div className="mt-4">
             <label className="block mb-2">Select Size:</label>
             <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setSize("small")}
-                className={`flex items-center px-4 py-2 border rounded-lg ${size === "small" ? "border-2 border-white bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "border-gray-300"}`}
-              >
-                <FaMugHot size={24} />
-                Small
-              </button>
-              <button
-                onClick={() => setSize("medium")}
-                className={`flex items-center px-4 py-2 border rounded-lg ${size === "medium" ? "border-2 border-white bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "border-gray-300"}`}
-              >
-                <FaCoffee size={24} />
-                Medium
-              </button>
-              <button
-                onClick={() => setSize("large")}
-                className={`flex items-center px-4 py-2 border rounded-lg ${size === "large" ? "bg-[#0c3a6d] text-white hover:text-[#b1d4f7]" : "border-gray-300"}`}
-              >
-                <FaGlassWhiskey size={24} />
-                Large
-              </button>
+              {[
+                { size: "small", icon: FaMugHot },
+                { size: "medium", icon: FaCoffee },
+                { size: "large", icon: FaGlassWhiskey }
+              ].map(({ size: sizeOption, icon: Icon }) => (
+                <button
+                  key={sizeOption}
+                  onClick={() => setSize(sizeOption)}
+                  className={`flex items-center px-4 py-2 border rounded-lg ${
+                    size === sizeOption
+                      ? "border-2 border-white bg-[#0c3a6d] text-white hover:text-[#b1d4f7]"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <Icon size={24} className="mr-2" />
+                  {sizeOption.charAt(0).toUpperCase() + sizeOption.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -111,13 +100,11 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
           <div className="mt-4">
             <label className="block mb-2">Select Origin:</label>
             <select
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="w-full p-2 border rounded-lg"
+              value={product.category}
+              disabled
+              className="w-full p-2 border rounded-lg bg-gray-100"
             >
-              <option value="Ethiopian Coffee">Ethiopian Coffee</option>
-              <option value="Brazilian Coffee">Brazilian Coffee</option>
-              <option value="Vietnamese Coffee">Vietnamese Coffee</option>
+              <option value={product.category}>{product.category}</option>
             </select>
           </div>
 
@@ -142,7 +129,16 @@ const CartCard = ({ isOpen, onClose, title, images = [], rating = 4.5, price = "
         isOpen={showOrderDetails} 
         onClose={() => setShowOrderDetails(false)} 
         onCartClose={onClose} // Pass onClose function to close cart modal
-        orderDetails={{ title, temperature, size, origin, quantity }} 
+        orderDetails={{
+          productId: product._id,
+          title: product.name,
+          price: product.price,
+          temperature,
+          size,
+          origin: product.category,
+          quantity,
+          images: product.images
+        }} 
       />
     </div>
   );

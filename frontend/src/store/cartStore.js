@@ -7,6 +7,24 @@ const useCartStore = create((set) => ({
   loading: false,
   error: null,
 
+  addToCart: async (productId, quantity) => {
+    set({ loading: true });
+    try {
+      await axios.post('http://localhost:5000/api/cart', 
+        { product: productId, quantity },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+      );
+      
+      // Refresh cart after adding
+      const response = await axios.get('http://localhost:5000/api/cart', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      set({ cartItems: response.data.cartItems, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+    }
+  },
+  
   fetchCart: async () => {
     set({ loading: true });
     try {

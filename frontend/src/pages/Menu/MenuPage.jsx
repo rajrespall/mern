@@ -19,15 +19,9 @@ const MenuPage = () => {
                 <div className="flex flex-wrap pb-8 gap-8 justify-center">
                     {products.map((product) => (
                         <MenuCard
-                            key={product._id}
-                            img={product.images[0]?.url}
-                            title={product.name}
-                            price={`₱${product.price}`}
-                            rating={4} // You can add a rating field to your product model if needed
-                            description={product.description}
-                            origin={product.category}
-                            stock={product.stock}
-                        />
+                        key={product._id}
+                        product={product}
+                      />
                     ))}
                 </div>
             )}
