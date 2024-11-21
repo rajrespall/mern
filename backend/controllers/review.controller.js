@@ -52,6 +52,7 @@ export const createReview = async (req, res) => {
   }
 };
 
+//get reviews per product
 export const getProductReviews = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -69,7 +70,7 @@ export const getProductReviews = async (req, res) => {
   }
 };
 
-// backend/controllers/review.controller.js
+//get unreviewed products per user
 export const getUnreviewedProducts = async (req, res) => {
   try {
     const userId = req.userId;
@@ -119,6 +120,7 @@ export const getUnreviewedProducts = async (req, res) => {
   }
 };
 
+//get reviews per user
 export const getUserReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ user: req.userId })
@@ -135,6 +137,7 @@ export const getUserReviews = async (req, res) => {
   }
 };
 
+//update review
 export const updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -195,6 +198,71 @@ export const updateReview = async (req, res) => {
     res.status(500).json({ 
       message: 'Error updating review', 
       error: error.message 
+    });
+  }
+};
+
+//get all reviews
+export const getAllReviews = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sortField = req.query.sortField || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const filterRating = req.query.rating ? parseInt(req.query.rating) : null;
+
+    // Build filter object
+    const filter = {};
+    if (filterRating) {
+      filter.rating = filterRating;
+    }
+
+    // Get total count
+    const total = await Review.countDocuments(filter);
+
+    // Get reviews with pagination and filters
+    const reviews = await Review.find(filter)
+      .populate('user', 'name email profileImage')
+      .populate('product', 'name price images')
+      .sort({ [sortField]: sortOrder })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    // Calculate stats
+    const stats = {
+      totalReviews: total,
+      averageRating: await Review.aggregate([
+        { $group: {
+          _id: null,
+          avg: { $avg: "$rating" }
+        }}
+      ]).then(result => result[0]?.avg.toFixed(1) || 0),
+      ratingDistribution: await Review.aggregate([
+        { $group: {
+          _id: "$rating",
+          count: { $sum: 1 }
+        }},
+        { $sort: { _id: 1 } }
+      ])
+    };
+
+    res.status(200).json({
+      success: true,
+      stats,
+      reviews,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalReviews: total,
+        limit
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching all reviews:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching reviews',
+      error: error.message
     });
   }
 };
