@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logo from '../assets/img/logo.png';
 import snsLogo from '../assets/img/SnSlogo.png';
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -6,8 +6,10 @@ import { AiOutlineClose, AiOutlineMenuUnfold, AiOutlineShoppingCart, AiOutlineSe
 import profilePic from '../assets/img/profile.png'; // Adjust this path to your actual profile image
 import { useAuthStore } from "../store/authStore"; // Import the auth store for logout
 import { motion } from 'framer-motion';
+import useProfileStore from '../store/profileStore' ;
 
 const Navbar = () => {
+  const { profile, fetchProfile } = useProfileStore();
   const [menu, setMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -15,6 +17,10 @@ const Navbar = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false); // Logging out state
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleChange = () => {
     setMenu(!menu);
@@ -92,7 +98,7 @@ const Navbar = () => {
           // Show profile picture and dropdown when logged in
           <div className="relative">
             <img
-              src={profilePic}
+              src={profile?.profileImage?.url}
               alt="Profile"
               className="h-11 w-11 rounded-full cursor-pointer"
               onClick={toggleDropdown}
