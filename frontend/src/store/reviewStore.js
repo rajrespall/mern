@@ -9,7 +9,11 @@ const useReviewStore = create((set) => ({
   unreviewedProducts: [],
   userReviews: [],
   allReviews: [],
-  stats: null,
+  stats: {
+    totalReviews: 0,
+    averageRating: 0,
+    ratingDistribution: []
+  },
   pagination: null,
 
   fetchProductReviews: async (productId) => {
@@ -170,6 +174,28 @@ const useReviewStore = create((set) => ({
     } catch (error) {
       set({ 
         error: error.response?.data?.message || 'Error fetching all reviews',
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  deleteReview: async (reviewId) => {
+    set({ isLoading: true });
+    try {
+      await axios.delete(`http://localhost:5000/api/reviews/${reviewId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      set(state => ({
+        allReviews: state.allReviews.filter(review => review._id !== reviewId),
+        isLoading: false
+      }));
+    } catch (error) {
+      set({ 
+        error: error.response?.data?.message || 'Error deleting review',
         isLoading: false 
       });
       throw error;

@@ -1,21 +1,41 @@
 // frontend/src/admin/origins/OriginTable.jsx
 import React, { useState, useEffect } from 'react';
-import { Box, Button, IconButton, Typography, Rating } from '@mui/material';
+import { Box, Button, IconButton, Dialog, DialogActions, DialogContent, 
+  DialogTitle, Typography, Rating } from '@mui/material';
 import MUIDataTable from 'mui-datatables';
 import useReviewStore from '../../store/reviewStore';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { toast } from 'react-hot-toast';
 
 const OriginTable = () => {
-  const { allReviews, stats, pagination, isLoading, fetchAllReviews } = useReviewStore();
+  const { allReviews, stats, pagination, isLoading, fetchAllReviews, deleteReview } = useReviewStore();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortOrder, setSortOrder] = useState('desc');
   const [sortField, setSortField] = useState('createdAt');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
 
   useEffect(() => {
     fetchAllReviews(page + 1, rowsPerPage, sortField, sortOrder);
   }, [page, rowsPerPage, sortField, sortOrder]);
+
+  const handleDeleteClick = (review) => {
+    setSelectedReview(review);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteReview(selectedReview._id);
+      toast.success('Review deleted successfully');
+      setDeleteConfirmOpen(false);
+      fetchAllReviews(); // Refresh list
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   const columns = [
     {
@@ -53,13 +73,16 @@ const OriginTable = () => {
       name: 'actions',
       label: 'Actions',
       options: {
-        customBodyRender: (value, tableMeta) => (
-          <Box>
-            <IconButton onClick={() => handleDelete(tableMeta.rowData)}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-        )
+        customBodyRender: (value, tableMeta) => {
+          const review = allReviews[tableMeta.rowIndex];
+          return (
+            <Box>
+              <IconButton onClick={() => handleDeleteClick(review)}>
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          );
+        }
       }
     }
   ];
@@ -87,18 +110,6 @@ const OriginTable = () => {
     }
   });
 
-  const StatCard = ({ title, value }) => (
-    <Box sx={{
-      bgcolor: 'rgba(255,255,255,0.1)',
-      p: 2,
-      borderRadius: 1,
-      textAlign: 'center'
-    }}>
-      <Typography variant="h6">{title}</Typography>
-      <Typography variant="h4">{value}</Typography>
-    </Box>
-  );
-
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ p: 3 }}>
@@ -108,6 +119,21 @@ const OriginTable = () => {
           columns={columns}
           options={options}
         />
+
+        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this review?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </ThemeProvider>
   );
