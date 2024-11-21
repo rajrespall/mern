@@ -17,11 +17,9 @@ const ProfileSchema = new mongoose.Schema({
   },
   contactNo: {
     type: String,
-    required: true
   },
   address: {
     type: String,
-    required: true
   },
   profileImage: {
     url: String,
