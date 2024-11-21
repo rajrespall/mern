@@ -72,20 +72,36 @@ const useCartStore = create((set) => ({
     }
   },
 
-  checkout: async (shippingAddress) => {
+  checkout: async (checkoutData) => {
     set({ loading: true });
     try {
-      await axios.post('http://localhost:5000/api/orders/checkout',
-        { shippingAddress },
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
-      );
-      set({ cartItems: [], loading: false });
-      return true;
+        const response = await axios.post(
+            'http://localhost:5000/api/orders/checkout',
+            {
+                selectedItems: checkoutData.selectedItems,
+                shippingAddress: checkoutData.shippingAddress
+            },
+            { 
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                }
+            }
+        );
+
+        // Update cart to remove checked out items
+        set(state => ({
+            cartItems: state.cartItems.filter(item => 
+                !checkoutData.selectedItems.includes(item._id)
+            ),
+            loading: false
+        }));
+
+        return response.data;
     } catch (error) {
-      set({ error: error.message, loading: false });
-      return false;
+        set({ error: error.message, loading: false });
+        throw error;
     }
-  }
+}
 }));
 
 export default useCartStore;

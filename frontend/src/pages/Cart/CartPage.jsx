@@ -5,11 +5,14 @@ import * as XLSX from "xlsx";
 import useCartStore from "../../store/cartStore";
 
 const CartPage = () => {
-    const { cartItems, loading, fetchCart, updateQuantity, removeItem } = useCartStore();
+    const { cartItems, loading, fetchCart, updateQuantity, removeItem, checkout } = useCartStore();
     const [selectedItems, setSelectedItems] = useState([]);
     const [userInfo, setUserInfo] = useState({
         name: "John Doe",
-        address: "123 Coffee St, Brewtown, CA 12345",
+        address: "123 Coffee St",
+        city: "Manila",
+        postalCode: "1000",
+        country: "Philippines",
     });
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
@@ -21,14 +24,14 @@ const CartPage = () => {
 
     const calculateTotal = () => {
         return selectedItems.reduce((total, id) => {
-            const item = cartItems.find(item => item.id === id);
-            return item ? total + item.price * item.quantity : total;
+            const item = cartItems.find(item => item._id === id); // Use _id instead of id
+            return item ? total + (item.product.price * item.quantity) : total;
         }, 0).toFixed(2);
     };
 
     const calculateTotalItems = () => {
         return selectedItems.reduce((total, id) => {
-            const item = cartItems.find(item => item.id === id);
+            const item = cartItems.find(item => item._id === id); // Use _id instead of id
             return item ? total + item.quantity : total;
         }, 0);
     };
@@ -56,7 +59,11 @@ const CartPage = () => {
       };
 
     const handleAddressChange = (e) => {
-        setUserInfo({ ...userInfo, address: e.target.value });
+        const { name, value } = e.target;
+        setUserInfo(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const handleCheckout = () => {
@@ -67,11 +74,36 @@ const CartPage = () => {
         }
     };
 
-    const confirmCheckout = () => {
-        // Logic to handle the checkout process goes here
-        setOrderPlaced(true);
-        setShowCheckoutModal(false);
-        setSelectedItems([]); // Clear selected items after ordering
+    const confirmCheckout = async () => {
+        try {
+            // Create shipping address object from userInfo
+            const shippingAddress = {
+                address: userInfo.address,
+                city: userInfo.city,
+                postalCode: userInfo.postalCode,
+                country: userInfo.country
+            };
+    
+            // Get selected cart items
+            const itemsToCheckout = cartItems.filter(item => 
+                selectedItems.includes(item._id)
+            );
+    
+            // Call checkout from cartStore
+            await checkout({
+                selectedItems: selectedItems,
+                shippingAddress
+            });
+    
+            setOrderPlaced(true);
+            setShowCheckoutModal(false);
+            setSelectedItems([]); // Clear selected items
+            await fetchCart(); // Refresh cart to remove checked out items
+    
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            alert(error.message || "Failed to process checkout");
+        }
     };
 
     const generatePDFReceipt = () => {
@@ -168,15 +200,43 @@ const CartPage = () => {
                 </div>
 
                 <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-xs">
-                    <h2 className="text-xl font-bold mb-4 text-center">Total Receipt</h2>
-                    <div className="mb-2">
-                        <strong>Name:</strong> {userInfo.name}
-                    </div>
+                    <h2 className="text-xl font-bold mb-4 text-center">Total Summary</h2>
                     <div className="mb-4">
-                        <strong>Shipping Address:</strong>
+                        <strong>Address:</strong>
                         <input
                             type="text"
+                            name="address"
                             value={userInfo.address}
+                            onChange={handleAddressChange}
+                            className="mt-1 p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <strong>City:</strong>
+                        <input
+                            type="text"
+                            name="city"
+                            value={userInfo.city}
+                            onChange={handleAddressChange}
+                            className="mt-1 p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <strong>Postal Code:</strong>
+                        <input
+                            type="text"
+                            naame="postalCode"
+                            value={userInfo.postalCode}
+                            onChange={handleAddressChange}
+                            className="mt-1 p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <strong>Country:</strong>
+                        <input
+                            type="text"
+                            name="country"
+                            value={userInfo.country}
                             onChange={handleAddressChange}
                             className="mt-1 p-2 w-full border rounded"
                         />
