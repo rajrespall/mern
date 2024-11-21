@@ -21,6 +21,9 @@ const ReviewSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  filteredText: {
+    type: String,
+  },
   images: [{
     url: String,
     cloudinary_id: String

@@ -5,7 +5,7 @@ import cloudinary from '../utils/cloudinary.js';
 // Create review
 export const createReview = async (req, res) => {
   try {
-    const { productId, rating, text } = req.body;
+    const { productId, rating, text, filteredText } = req.body;
     const userId = req.userId;
 
     const hasPurchased = await Order.findOne({
@@ -41,7 +41,7 @@ export const createReview = async (req, res) => {
       user: userId,
       product: productId,
       rating,
-      text,
+      text: filteredText || text,
       images
     });
 
@@ -141,7 +141,7 @@ export const getUserReviews = async (req, res) => {
 export const updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const { rating, text } = req.body;
+    const { rating, text, filteredText } = req.body;
     const userId = req.userId;
 
     // Find review and verify ownership
@@ -184,7 +184,7 @@ export const updateReview = async (req, res) => {
       reviewId,
       {
         rating,
-        text,
+        text: filteredText || text,
         images,
       },
       { new: true }
