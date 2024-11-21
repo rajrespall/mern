@@ -266,3 +266,44 @@ export const getAllReviews = async (req, res) => {
     });
   }
 };
+
+export const deleteReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const userId = req.userId;
+
+    // Find review
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Delete images from cloudinary if they exist
+    if (review.images?.length > 0) {
+      const deletePromises = review.images.map(image => {
+        if (image.cloudinary_id) {
+          return cloudinary.uploader.destroy(image.cloudinary_id);
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(deletePromises);
+    }
+
+    // Delete the review
+    await Review.findByIdAndDelete(reviewId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Review deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting review',
+      error: error.message
+    });
+  }
+};

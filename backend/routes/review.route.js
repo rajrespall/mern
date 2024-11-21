@@ -6,7 +6,8 @@ import {
     getUnreviewedProducts, 
     getUserReviews, 
     updateReview,
-    getAllReviews
+    getAllReviews,
+    deleteReview
 } from '../controllers/review.controller.js';
 import { verifyToken } from '../middlewares/verifyToken.js';
 import { upload } from '../middlewares/multer.js';
@@ -20,5 +21,6 @@ router.get('/unreviewed', verifyToken, getUnreviewedProducts);
 router.get('/user', verifyToken, getUserReviews);
 router.put('/:reviewId', verifyToken, upload, updateReview);
 router.get('/admin/all', verifyToken, isAdmin, getAllReviews);
+router.delete('/:reviewId', verifyToken, isAdmin, deleteReview);
 
 export default router;
