@@ -2,22 +2,14 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Eye } from "lucide-react";
 import useOrderStore from "../../store/orderStore";
-
-const orderData = [
-	{ id: "ORD001", customer: "John Doe", total: 235.4, status: "Delivered", date: "2023-07-01" },
-	{ id: "ORD002", customer: "Jane Smith", total: 412.0, status: "Processing", date: "2023-07-02" },
-	{ id: "ORD003", customer: "Bob Johnson", total: 162.5, status: "Shipped", date: "2023-07-03" },
-	{ id: "ORD004", customer: "Alice Brown", total: 750.2, status: "Pending", date: "2023-07-04" },
-	{ id: "ORD005", customer: "Charlie Wilson", total: 95.8, status: "Delivered", date: "2023-07-05" },
-	{ id: "ORD006", customer: "Eva Martinez", total: 310.75, status: "Processing", date: "2023-07-06" },
-	{ id: "ORD007", customer: "David Lee", total: 528.9, status: "Shipped", date: "2023-07-07" },
-	{ id: "ORD008", customer: "Grace Taylor", total: 189.6, status: "Delivered", date: "2023-07-08" },
-];
+import { useSnackbar } from 'notistack';
 
 const OrdersTable = () => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredOrders, setFilteredOrders] = useState([]);
-	const { orders, loading, fetchAllOrders } = useOrderStore();
+	const { orders, loading, fetchAllOrders, updateOrderStatus } = useOrderStore();
+	const { enqueueSnackbar } = useSnackbar();
+	const statusOptions = ["Processing", "Shipped", "Delivered", "Cancelled"];
 
 	useEffect(() => {
 		fetchAllOrders();
@@ -32,12 +24,27 @@ const OrdersTable = () => {
 	const handleSearch = (e) => {
 		const term = e.target.value.toLowerCase();
 		setSearchTerm(term);
-		const filtered = orderData.filter(
-			(order) => order.id.toLowerCase().includes(term) || order.customer.toLowerCase().includes(term)
+		
+		// Filter orders from the store instead of non-existent orderData
+		const filtered = orders.filter(
+		  (order) => 
+			order._id.toLowerCase().includes(term) || 
+			order.user.name.toLowerCase().includes(term) ||
+			order.orderStatus.toLowerCase().includes(term)
 		);
+		
 		setFilteredOrders(filtered);
-	};
+	  };
 
+	const handleStatusChange = async (orderId, newStatus) => {
+		try {
+		  await updateOrderStatus(orderId, newStatus);
+		  enqueueSnackbar('Order status updated successfully!', { variant: 'success' });
+		} catch (error) {
+		  enqueueSnackbar('Failed to update order status', { variant: 'error' });
+		}
+	};
+	  
 	if (loading) {
 		return <div>Loading orders...</div>;
 	}
@@ -105,19 +112,24 @@ const OrdersTable = () => {
 									${order.totalPrice.toFixed(2)}
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
-									<span
-										className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-											order.orderStatus === "Delivered"
-												? "bg-green-100 text-green-800"
-												: order.orderStatus === "Processing"
-												? "bg-yellow-100 text-yellow-800"
-												: order.orderStatus === "Shipped"
-												? "bg-blue-100 text-blue-800"
-												: "bg-red-100 text-red-800"
-										}`}
+									<select
+										value={order.orderStatus}
+										onChange={(e) => handleStatusChange(order._id, e.target.value)}
+										className={`px-2 py-1 rounded-full text-xs font-semibold 
+										${order.orderStatus === "Delivered"
+											? "bg-green-100 text-green-800"
+											: order.orderStatus === "Processing"
+											? "bg-yellow-100 text-yellow-800"
+											: order.orderStatus === "Shipped"
+											? "bg-blue-100 text-blue-800"
+											: "bg-red-100 text-red-800"}`}
 									>
-										{order.orderStatus}
-									</span>
+										{statusOptions.map((status) => (
+										<option key={status} value={status}>
+											{status}
+										</option>
+										))}
+									</select>
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{new Date(order.createdAt).toLocaleDateString()}</td>
 								<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
