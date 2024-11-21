@@ -82,7 +82,10 @@ export const getUserOrders = async (req, res) => {
         // Fetch all orders for the user
         const orders = await Order.find({ user: userId }).populate('orderItems.product');
         if (!orders.length) {
-            return res.status(404).json({ message: 'No orders found' });
+            return res.status(200).json({
+                success: true,
+                orders: orders
+            });
         }
 
         res.status(200).json(orders);

@@ -13,9 +13,9 @@ const useOrderStore = create((set) => ({
       const response = await axios.get('http://localhost:5000/api/orders/user', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      set({ orders: response.data, loading: false });
+      set({ orders: response.data || [], loading: false });
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Error fetching orders', loading: false});
+      set({ error: error.response?.data?.message || 'Error fetching orders', loading: false, orders: []});
     }
   },
 
