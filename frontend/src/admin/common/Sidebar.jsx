@@ -7,7 +7,7 @@ import { useAuthStore } from "../../store/authStore";
 const SIDEBAR_ITEMS = [
   { name: "Overview", icon: BarChart, color: "#6366f1", href: "/admin/overview" },
   { name: "Menu", icon: "/img/menu.png", color: "#FF5722", href: "/admin/menus" },
-  { name: "Origins", icon: "/img/origins.png", color: "#FFEB3B", href: "/admin/origins" },
+  { name: "Feedbacks", icon: "/img/origins.png", color: "#FFEB3B", href: "/admin/origins" },
   { name: "Users", icon: People, color: "#EC4899", href: "/admin/users" },
   { name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/admin/orders" },
   { name: "Sales", icon: AttachMoney, color: "#10B981", href: "/admin/sales" },
