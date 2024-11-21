@@ -33,7 +33,7 @@ const useReviewStore = create((set) => ({
       
       if (reviewData.images) {
         reviewData.images.forEach(image => {
-          formData.append('files', image);
+          formData.append('images', image);
         });
       }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
 import MUIDataTable from 'mui-datatables';
-import { Button, IconButton, Dialog, DialogContent, Typography, Box, CardMedia, Card } from '@mui/material';
+import { Button, IconButton, Dialog, DialogContent, Typography, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -9,39 +9,36 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AddOrigin from './AddOrigin';
 import EditOrigin from './EditOrigin';
-import Carousel from 'react-material-ui-carousel';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const OriginTable = () => {
-  const [originData, setOriginData] = useState([]);
+  const [feedbackData, setFeedbackData] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
-  const [openImageDialog, setOpenImageDialog] = useState(false);
-  const [currentImages, setCurrentImages] = useState([]);
-  const [editingOrigin, setEditingOrigin] = useState(null);
+  const [editingFeedback, setEditingFeedback] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
 
   const handleOpenAdd = () => {
-    setEditingOrigin(null);
+    setEditingFeedback(null);
     setOpenAddModal(true);
   };
 
-  const handleOpenEdit = (origin) => {
-    setEditingOrigin(origin);
+  const handleOpenEdit = (feedback) => {
+    setEditingFeedback(feedback);
     setOpenEditModal(true);
   };
 
   const handleDelete = (id) => {
-    setOriginData((prevData) => prevData.filter((origin) => origin.id !== id));
-    enqueueSnackbar('Origin deleted successfully!', { variant: 'success' });
+    setFeedbackData((prevData) => prevData.filter((feedback) => feedback.id !== id));
+    enqueueSnackbar('Feedback deleted successfully!', { variant: 'success' });
   };
 
   const handleBulkDelete = () => {
-    setOriginData((prevData) => prevData.filter((origin) => !selectedRows.includes(origin.id)));
+    setFeedbackData((prevData) => prevData.filter((feedback) => !selectedRows.includes(feedback.id)));
     setSelectedRows([]);
-    enqueueSnackbar('Selected origins deleted successfully!', { variant: 'success' });
+    enqueueSnackbar('Selected feedback deleted successfully!', { variant: 'success' });
   };
 
   const handleExpandClick = (id) => {
@@ -50,45 +47,26 @@ const OriginTable = () => {
     );
   };
 
-  const handleViewImages = (images) => {
-    setCurrentImages(images);
-    setOpenImageDialog(true);
-  };
-
   useEffect(() => {
-    setOriginData([
-      { id: 1, name: 'Ethiopia', description: 'Known for its rich coffee culture', price: 25, region: 'Africa', images: ['/img/ethiopia1.png', '/img/ethiopia2.png'] },
-      { id: 2, name: 'Colombia', description: 'Famous for its smooth coffee', price: 20, region: 'South America', images: ['/img/colombia1.png', '/img/colombia2.png'] },
+    setFeedbackData([
+      { id: 1, user: 'John Doe', comment: 'Great service!', rating: 5, date: '2023-01-01' },
+      { id: 2, user: 'Jane Smith', comment: 'Could be better.', rating: 3, date: '2023-01-02' },
     ]);
   }, []);
 
   const columns = [
     { name: 'id', label: 'ID' },
-    {
-      name: 'images',
-      label: 'Images',
-      options: {
-        customBodyRender: (images) => (
-          <CardMedia
-            component="img"
-            image={images[0]}
-            alt="Origin Image"
-            sx={{ width: 80, height: 60, borderRadius: '4px' }}
-          />
-        ),
-      },
-    },
-    { name: 'name', label: 'Origin Name' },
-    { name: 'region', label: 'Region' },
-    { name: 'price', label: 'Price', options: { customBodyRender: (value) => `$${value.toFixed(2)}/kg` } },
-    { name: 'description', label: 'Description' },
+    { name: 'user', label: 'User' },
+    { name: 'comment', label: 'Comment' },
+    { name: 'rating', label: 'Rating' },
+    { name: 'date', label: 'Date' },
     {
       name: 'actions',
       label: 'Actions',
       options: {
         customBodyRender: (value, tableMeta) => {
           const rowIndex = tableMeta.rowIndex;
-          const rowData = originData[rowIndex];
+          const rowData = feedbackData[rowIndex];
           return (
             <div>
               <IconButton onClick={() => handleOpenEdit(rowData)}>
@@ -99,9 +77,6 @@ const OriginTable = () => {
               </IconButton>
               <IconButton onClick={() => handleExpandClick(rowData.id)}>
                 {expandedRows.includes(rowData.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-              <IconButton onClick={() => handleViewImages(rowData.images)}>
-                <img src="/img/view-icon.png" alt="View" style={{ width: 18, height: 18 }} />
               </IconButton>
             </div>
           );
@@ -117,7 +92,7 @@ const OriginTable = () => {
     },
     expandableRows: true,
     renderExpandableRow: (rowData) => {
-      const row = originData.find((origin) => origin.id === rowData[0]);
+      const row = feedbackData.find((feedback) => feedback.id === rowData[0]);
       return (
         <Box
           key={row.id}
@@ -137,23 +112,20 @@ const OriginTable = () => {
           }}
         >
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-            {row.name}
+            {row.user}
           </Typography>
           <Typography variant="body1">ID: {row.id}</Typography>
-          <Typography variant="body1">Region: {row.region}</Typography>
-          <Typography variant="body1">Price: ${row.price}/kg</Typography>
+          <Typography variant="body1">Rating: {row.rating}</Typography>
+          <Typography variant="body1">Date: {row.date}</Typography>
           <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-            Description: {row.description}
+            Comment: {row.comment}
           </Typography>
-          <Button variant="outlined" color="primary" onClick={() => handleViewImages(row.images)} sx={{ mt: 2 }}>
-            View Images
-          </Button>
         </Box>
       );
     },
     customToolbarSelect: () => (
       <Button variant="contained" color="error" onClick={handleBulkDelete}>
-        Delete Selected Origins
+        Delete Selected Feedback
       </Button>
     ),
     responsive: 'standard',
@@ -225,14 +197,14 @@ const OriginTable = () => {
                 fontWeight: 'bold',
               }}
             >
-              Add New Origin
+              Add New Feedback
             </Button>
           </div>
         </div>
 
         <MUIDataTable
-          title={"Origin Table"}
-          data={originData}
+          title={"Feedback Table"}
+          data={feedbackData}
           columns={columns}
           options={options}
           sx={{
@@ -242,34 +214,22 @@ const OriginTable = () => {
           }}
         />
 
-        {openImageDialog && (
-          <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)} maxWidth="md" fullWidth>
-            <DialogContent>
-              <Carousel>
-                {currentImages.map((image, index) => (
-                  <img key={index} src={image} alt={`Origin Image ${index}`} style={{ width: '100%' }} />
-                ))}
-              </Carousel>
-            </DialogContent>
-          </Dialog>
-        )}
-
         {openAddModal && (
           <AddOrigin
             isOpen={openAddModal}
             onClose={() => setOpenAddModal(false)}
-            onAddOrigin={(newOrigin) => setOriginData([...originData, newOrigin])}
+            onAddOrigin={(newFeedback) => setFeedbackData([...feedbackData, newFeedback])}
           />
         )}
 
         {openEditModal && (
           <EditOrigin
             isOpen={openEditModal}
-            origin={editingOrigin}
+            origin={editingFeedback}
             onClose={() => setOpenEditModal(false)}
-            onEditOrigin={(updatedOrigin) => {
-              setOriginData((prevData) =>
-                prevData.map((origin) => (origin.id === updatedOrigin.id ? updatedOrigin : origin))
+            onEditOrigin={(updatedFeedback) => {
+              setFeedbackData((prevData) =>
+                prevData.map((feedback) => (feedback.id === updatedFeedback.id ? updatedFeedback : feedback))
               );
             }}
           />
