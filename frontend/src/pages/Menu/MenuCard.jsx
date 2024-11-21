@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaComments } from "react-icons/fa";
 import img1 from "@assets/img/Menu/2.png";
 import img2 from "@assets/img/Menu/3.png";
 import img3 from "@assets/img/Menu/8.png";
@@ -8,10 +8,12 @@ import img5 from "@assets/img/Menu/6.png";
 import img6 from "@assets/img/Menu/7.png";
 
 import CartCard from "./OrderCard";
+import ReviewsModal from "./ReviewsModal";
 
 const MenuCard = ({ product }) => {
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the current image index
   const [isCartOpen, setIsCartOpen] = useState(false); // State to track the cart modal visibility
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
 
   // Create an array of images to cycle through
   const images = [img1, img2, img3, img4, img5, img6]; // Ensure these images are unique
@@ -56,7 +58,13 @@ const MenuCard = ({ product }) => {
 
           {/* Price and Cart Section */}
           <div className="flex justify-between items-center mt-2">
-            <h3 className="font-semibold text-xl">{product.price}</h3>
+            <h3 className="font-semibold text-xl">₱{product.price}</h3>
+            <span
+              className="flex items-center border-white bg-[#e1e7fe] px-3 py-2 rounded-full hover:text-blue-200 cursor-pointer"
+              onClick={() => setIsReviewsOpen(true)}
+            >
+              <FaComments size={20} />
+            </span>
             <span
               className="flex items-center border-white bg-[#e1e7fe] px-3 py-2 rounded-full hover:text-blue-200 cursor-pointer"
               onClick={handleCartClick} // Open cart modal on click
@@ -71,6 +79,11 @@ const MenuCard = ({ product }) => {
         isOpen={isCartOpen}
         onClose={handleCloseCart}
         product={product} // Pass images or any other necessary data
+      />
+      <ReviewsModal
+        isOpen={isReviewsOpen}
+        onClose={() => setIsReviewsOpen(false)}
+        productId={product._id}
       />
     </>
   );

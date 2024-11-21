@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReviewCard from "./ReviewCard";
 import StarRating from "./StarRating"; 
 import img1 from "../../assets/img/pic1.png"; // Adjusted import path
+import useReviewStore from "../../store/reviewStore.js";
 
 const Feedbacks = () => {
   const [feedback, setFeedback] = useState("");
@@ -10,8 +11,13 @@ const Feedbacks = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { unreviewedProducts, fetchUnreviewedProducts, isLoading } = useReviewStore();
 
   const handleFeedbackChange = (e) => setFeedback(e.target.value);
+
+  useEffect(() => {
+    fetchUnreviewedProducts();
+  }, []);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -66,6 +72,17 @@ const Feedbacks = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center lg:px-32 px-5 bg-gradient-to-r from-[#fffdf9] to-[#134278] p-5">
+      <h1 className="font-semibold text-center text-4xl lg:mt-14 mt-24">
+        Products to Review
+      </h1>
+      {unreviewedProducts.map(product => (
+        <div key={product._id}>
+          <h3>{product.name}</h3>
+          <p>{product.description}</p>
+          <button>Post a Review</button>
+        </div>
+      ))}
+      
       <h1 className="font-semibold text-center text-4xl lg:mt-14 mt-24">
         Customer's Reviews
       </h1>
