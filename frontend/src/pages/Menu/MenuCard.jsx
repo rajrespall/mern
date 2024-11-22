@@ -60,7 +60,7 @@ const MenuCard = ({ product }) => {
           {/* Ratings Section */}
           <div className="flex items-center mt-1">
             {Array.from({ length: 5 }, (_, index) => (
-              <span key={index} className={index < (product.rating || 4.5) ? "text-yellow-500" : "text-gray-300"}>
+              <span key={index} className={index < (product.rating) ? "text-yellow-500" : "text-gray-300"}>
                 ★
               </span>
             ))}

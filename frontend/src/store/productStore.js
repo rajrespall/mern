@@ -7,14 +7,54 @@ const useProductStore = create((set) => ({
   isLoading: false,
   error: null,
 
-  // Fetch all products
+  // Fetch all products with ratings
   fetchProducts: async () => {
     set({ isLoading: true });
     try {
-      const response = await axios.get('http://localhost:5000/api/products');
-      set({ products: response.data, isLoading: false });
+      // Get products
+      const productsResponse = await axios.get('http://localhost:5000/api/products');
+      const products = productsResponse.data;
+
+      // Get reviews for each product
+      const productsWithRatings = await Promise.all(
+        products.map(async (product) => {
+          try {
+            const reviewsResponse = await axios.get(
+              `http://localhost:5000/api/reviews/product/${product._id}`
+            );
+            const reviews = reviewsResponse.data;
+            
+            // Calculate average rating
+            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = reviews.length > 0 
+              ? Number((totalRating / reviews.length).toFixed(1)) 
+              : 0;
+
+            return {
+              ...product,
+              rating: averageRating,
+              reviewCount: reviews.length
+            };
+          } catch (error) {
+            console.error(`Error fetching reviews for product ${product._id}:`, error);
+            return {
+              ...product,
+              rating: 0,
+              reviewCount: 0
+            };
+          }
+        })
+      );
+
+      set({ 
+        products: productsWithRatings, 
+        isLoading: false 
+      });
     } catch (error) {
-      set({ error: error.message, isLoading: false });
+      set({ 
+        error: error.message, 
+        isLoading: false 
+      });
     }
   },
 
