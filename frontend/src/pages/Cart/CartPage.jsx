@@ -146,7 +146,7 @@ const CartPage = () => {
     }
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-[#fffdf9] to-[#134278]">
-            <div className="flex flex-col lg:flex-row justify-center gap-5">
+            <div className="flex flex-col lg:flex-row justify-center gap-5 pt-32 pb-28">
                 <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-2xl">
                     <h1 className="text-2xl font-bold mb-5 text-center">Your Cart</h1>
                     {cartItems.length === 0 ? (
@@ -297,11 +297,18 @@ const CartPage = () => {
                         <button onClick={() => setOrderPlaced(false)} className="mt-4 px-4 py-2 bg-[#0c3a6d] text-white rounded">
                             Close
                         </button>
+
+                        
                     </div>
+                    
                 </div>
             )}
+            
         </div>
+        
+
     );
+    
 };
 
 export default CartPage;

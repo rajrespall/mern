@@ -76,10 +76,10 @@ const Navbar = () => {
             Menu
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-black transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
           </RouterLink>
-          <RouterLink to="/products" className="group relative inline-block cursor-pointer hover:text-blue-200">
+          {/* <RouterLink to="/products" className="group relative inline-block cursor-pointer hover:text-blue-200">
             Products
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-black transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
-          </RouterLink>
+          </RouterLink> */}
           <RouterLink to="/feedbacks" className="group relative inline-block hover:text-blue-200 transition-all cursor-pointer">
             Feedbacks
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-200 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"></span>
