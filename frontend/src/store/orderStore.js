@@ -1,11 +1,49 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-const useOrderStore = create((set) => ({
+const useOrderStore = create((set, get) => ({
   orders: [],
-  stats: {},
+  dailyOrderStats: [],
+  stats: {
+    totalOrders: 0,
+    pendingOrders: 0,
+    completedOrders: 0,
+    totalRevenue: 0,
+    shippedOrders: 0,
+    cancelledOrders: 0
+  },
   loading: false,
   error: null,
+
+  // frontend/src/store/orderStore.js - Update fetchDailyOrderStats
+  fetchDailyOrderStats: () => {
+    const orders = get().orders;
+
+    // Get dates for last 7 days 
+    const last7Days = [...Array(7)].map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    // Count orders for each day
+    const dailyStats = last7Days.map(date => {
+      const count = orders.filter(order => {
+        const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+        return orderDate === date;
+      }).length;
+
+      return {
+        date: new Date(date).toLocaleDateString('en-US', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        orders: count
+      };
+    });
+
+    set({ dailyOrderStats: dailyStats });
+  },
 
   fetchUserOrders: async () => {
     set({ loading: true });
@@ -25,12 +63,23 @@ const useOrderStore = create((set) => ({
       const response = await axios.get('http://localhost:5000/api/orders/admin/all', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      
+
+      const orders = response.data.orders;
+      const stats = {
+        totalOrders: orders.length,
+        pendingOrders: orders.filter(order => order.orderStatus === 'Processing').length,
+        completedOrders: orders.filter(order => order.orderStatus === 'Delivered').length,
+        shippedOrders: orders.filter(order => order.orderStatus === 'Shipped').length,
+        cancelledOrders: orders.filter(order => order.orderStatus === 'Cancelled').length,
+        totalRevenue: orders.reduce((sum, order) => sum + order.totalPrice, 0)
+      };
+
       set({ 
-        orders: response.data.orders,
-        stats: response.data.stats,
+        orders: orders,
+        stats: stats,
         loading: false 
       });
+      get().fetchDailyOrderStats();
     } catch (error) {
       set({ error: error.message, loading: false });
     }

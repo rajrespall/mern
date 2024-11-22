@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import useOrderStore from "../../store/orderStore.js"
 
-const orderStatusData = [
-	{ name: "Pending", value: 30 },
-	{ name: "Processing", value: 45 },
-	{ name: "Shipped", value: 60 },
-	{ name: "Delivered", value: 120 },
-];
 const COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FED766", "#2AB7CA"];
 
 const OrderDistribution = () => {
+	const { fetchAllOrders, stats } = useOrderStore();
+	const orderStatusData = [
+		{ name: "Cancelled", value: stats.cancelledOrders },
+		{ name: "Processing", value: stats.pendingOrders },
+		{ name: "Shipped", value: stats.shippedOrders },
+		{ name: "Delivered", value: stats.completedOrders },
+	];
 	return (
 		<motion.div
 			className='bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700'

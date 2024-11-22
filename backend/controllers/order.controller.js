@@ -1,6 +1,5 @@
 import { Order } from '../models/order.model.js';
 import { Cart } from '../models/cart.model.js';
-import mongoose from 'mongoose';
 
 // Create a new order from the cart
 export const checkout = async (req, res) => {
