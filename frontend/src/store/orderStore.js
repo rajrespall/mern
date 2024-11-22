@@ -4,6 +4,7 @@ import axios from 'axios';
 const useOrderStore = create((set, get) => ({
   orders: [],
   dailyOrderStats: [],
+  monthlySalesData: [],
   stats: {
     totalOrders: 0,
     pendingOrders: 0,
@@ -45,6 +46,30 @@ const useOrderStore = create((set, get) => ({
     set({ dailyOrderStats: dailyStats });
   },
 
+  fetchMonthlySales: () => {
+    const orders = get().orders;
+
+    const monthlySales = orders.reduce((acc, order) => {
+      const month = new Date(order.createdAt).toLocaleString('en-US', { month: 'short' });
+      const year = new Date(order.createdAt).getFullYear();
+      const key = `${month} ${year}`;
+
+      if (!acc[key]) {
+        acc[key] = 0;
+      }
+
+      acc[key] += order.totalPrice;
+      return acc;
+    }, {});
+
+    const monthlySalesData = Object.keys(monthlySales).map(key => ({
+      month: key,
+      sales: monthlySales[key]
+    }));
+
+    set({ monthlySalesData });
+  },
+
   fetchUserOrders: async () => {
     set({ loading: true });
     try {
@@ -80,6 +105,7 @@ const useOrderStore = create((set, get) => ({
         loading: false 
       });
       get().fetchDailyOrderStats();
+      get().fetchMonthlySales();
     } catch (error) {
       set({ error: error.message, loading: false });
     }
