@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import Input from "../components/Input";
 import { Loader, Lock, Mail, User, Eye, EyeOff } from "lucide-react";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import SNSImage from '../assets/img/SNS.png';
@@ -38,7 +39,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#e9e6de] to-[#0c3a6d]">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#e9e6de] to-[#0c3a6d]"> 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,36 +58,33 @@ const SignUpPage = () => {
           >
             {({ values, handleChange, handleSubmit }) => (
               <Form onSubmit={handleSubmit} className="flex flex-col gap-1">
-                <div>
-                  <div className="relative">
-                    <Field
-                      name="name"
-                      placeholder="Full Name"
-                      className="w-full pl-10 pr-4 py-2 bg-[#e9e6de] bg-opacity-80 rounded-lg border border-[#0c3a6d] focus:border-[#002D74] focus:ring-2 focus:ring-[#002D74] text-[#0c3a6d] placeholder-[#002D74] transition duration-200"
-                    />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <User className="size-5 text-[#002D74]" />
-                    </div>
+                <div className="relative mb-6">
+                  <Field
+                    name="name"
+                    type="text"
+                    placeholder="Full Name"
+                    className="w-full pl-10 pr-4 py-2 bg-[#e9e6de] bg-opacity-80 rounded-lg border border-[#0c3a6d] focus:border-[#002D74] focus:ring-2 focus:ring-[#002D74] text-[#0c3a6d] placeholder-[#002D74] transition duration-200"
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <User className="size-5 text-[#002D74]" />
                   </div>
                   <ErrorMessage name="name" component="p" className="text-red-500 text-sm" />
                 </div>
 
-                <div>
-                  <div className="relative">
-                    <Field
-                      name="email"
-                      type="email"
-                      placeholder="Email Address"
-                      className="w-full pl-10 pr-4 py-2 bg-[#e9e6de] bg-opacity-80 rounded-lg border border-[#0c3a6d] focus:border-[#002D74] focus:ring-2 focus:ring-[#002D74] text-[#0c3a6d] placeholder-[#002D74] transition duration-200"
-                    />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Mail className="size-5 text-[#002D74]" />
-                    </div>
+                <div className="relative mb-6">
+                  <Field
+                    name="email"
+                    type="email"
+                    placeholder="Email Address"
+                    className="w-full pl-10 pr-4 py-2 bg-[#e9e6de] bg-opacity-80 rounded-lg border border-[#0c3a6d] focus:border-[#002D74] focus:ring-2 focus:ring-[#002D74] text-[#0c3a6d] placeholder-[#002D74] transition duration-200"
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <Mail className="size-5 text-[#002D74]" />
                   </div>
                   <ErrorMessage name="email" component="p" className="text-red-500 text-sm" />
                 </div>
 
-                <div className="relative">
+                <div className="relative mb-6">
                   <Field
                     name="password"
                     type={showPassword ? "text" : "password"}
@@ -104,8 +102,8 @@ const SignUpPage = () => {
                     {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                   <PasswordStrengthMeter password={values.password} />
+                  <ErrorMessage name="password" component="p" className="text-red-500 text-sm" />
                 </div>
-                <ErrorMessage name="password" component="p" className="text-red-500 text-sm" />
 
                 {error && <p className="text-red-500 font-semibold mt-2">{error}</p>}
 

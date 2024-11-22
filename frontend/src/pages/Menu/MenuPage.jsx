@@ -88,7 +88,7 @@ const MenuPage = () => {
                         variant="contained"
                         color= "info"
                         onClick={toggleFilters}
-                        sx={{ position: "fixed", right: "50px", top: "100px", zIndex: 50 }}
+                        sx={{ position: "fixed", right: "50px", top: "160px", zIndex: 50 }}
                     >
                         {showFilters ? "Close Filter" : "Filter Products"}
                     </Button>

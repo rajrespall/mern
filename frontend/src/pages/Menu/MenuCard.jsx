@@ -31,11 +31,12 @@ const MenuCard = ({ product }) => {
   const handleCloseCart = () => {
     setIsCartOpen(false); // Close the cart modal
   };
+
   if (!product) return null;
-  
+
   return (
     <>
-      <div className="w-full lg:w-1/4 bg-white p-3 rounded-lg">
+      <div className="w-full lg:w-1/4 bg-white p-3 rounded-lg shadow-lg hover:shadow-2xl transition-transform duration-300 ease-in-out transform hover:scale-105">
         <div>
           <img
             className="rounded-xl cursor-pointer"
@@ -51,8 +52,8 @@ const MenuCard = ({ product }) => {
           <div className="flex items-center mt-1">
             {Array.from({ length: 5 }, (_, index) => (
               <span key={index} className={index < (product.rating || 4.5) ? "text-yellow-500" : "text-gray-300"}>
-              ★
-            </span>
+                ★
+              </span>
             ))}
           </div>
 
@@ -75,16 +76,26 @@ const MenuCard = ({ product }) => {
         </div>
       </div>
       {/* Include the CartCard modal here */}
-      <CartCard
-        isOpen={isCartOpen}
-        onClose={handleCloseCart}
-        product={product} // Pass images or any other necessary data
-      />
-      <ReviewsModal
-        isOpen={isReviewsOpen}
-        onClose={() => setIsReviewsOpen(false)}
-        productId={product._id}
-      />
+      {isCartOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={handleCloseCart}></div>
+          <CartCard
+            isOpen={isCartOpen}
+            onClose={handleCloseCart}
+            product={product} // Pass images or any other necessary data
+          />
+        </div>
+      )}
+      {isReviewsOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setIsReviewsOpen(false)}></div>
+          <ReviewsModal
+            isOpen={isReviewsOpen}
+            onClose={() => setIsReviewsOpen(false)}
+            productId={product._id}
+          />
+        </div>
+      )}
     </>
   );
 };
