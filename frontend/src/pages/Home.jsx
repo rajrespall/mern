@@ -5,6 +5,7 @@ import aboutImg from "../assets/img/about.png";
 import Button from "../components/Button";
 import aboutUsImage from "../assets/img/aboutus.png";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer"; 
 
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
@@ -17,7 +18,6 @@ const RedirectAuthenticatedUser = ({ children }) => {
 
   return children;
 };
-
 
 const Home = () => {
   return (
@@ -80,6 +80,8 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <Footer /> {/* Add Footer component */}
     </>
   );
 };
