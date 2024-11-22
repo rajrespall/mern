@@ -14,15 +14,15 @@ const MenuCard = ({ product }) => {
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the current image index
   const [isCartOpen, setIsCartOpen] = useState(false); // State to track the cart modal visibility
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-
-  // Create an array of images to cycle through
-  const images = [img1, img2, img3, img4, img5, img6]; // Ensure these images are unique
+  const [imageError, setImageError] = useState(false);
+  const fallbackImage = img1;
 
   const handleImageClick = () => {
     if (product?.images?.length > 1) {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % product.images.length);
+      const nextIndex = (currentIndex + 1) % product.images.length; 
+      setCurrentIndex(nextIndex);
     }
-  };
+   };
 
   const handleCartClick = () => {
     setIsCartOpen(true); // Open the cart modal
@@ -37,13 +37,22 @@ const MenuCard = ({ product }) => {
   return (
     <>
       <div className="w-full lg:w-1/4 bg-white p-3 rounded-lg shadow-lg hover:shadow-2xl transition-transform duration-300 ease-in-out transform hover:scale-105">
-        <div>
-          <img
-            className="rounded-xl cursor-pointer"
-            src={product.images?.[currentIndex]?.url || product.images?.[0]?.url}
+        <div className="relative">
+        <img
+            className="rounded-xl cursor-pointer w-full h-64 object-cover"
+            src={imageError ? fallbackImage : product.images?.[currentIndex]?.url}
             alt={product.name}
-            onClick={handleImageClick} // Change image on click
+            onClick={handleImageClick}
+            onError={(e) => {
+              setImageError(true);
+              e.target.src = fallbackImage;
+            }}
           />
+          {product.images?.length > 1 && !imageError && (
+            <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+              {currentIndex + 1} / {product.images.length}
+            </div>
+          )}
         </div>
         <div className="p-2 mt-5 flex flex-col">
           <h3 className="font-semibold text-xl">{product.name}</h3>

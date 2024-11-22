@@ -23,6 +23,16 @@ const MenuPage = () => {
     });
     const [filteredProducts, setFilteredProducts] = useState([]);
     const productsPerPage = 6; // Number of products per page
+    const categories = [
+        "All",
+        "Ethiopian",
+        "Brazilian", 
+        "Vietnamese",
+        "Italian",
+        "Mexican",
+        "American",
+        "Other"
+    ];
 
     useEffect(() => {
         fetchProducts();
@@ -30,18 +40,26 @@ const MenuPage = () => {
 
     // Apply filters to the product list
     useEffect(() => {
-        let filtered = products;
+        let filtered = [...products];
 
         if (filters.category !== "All") {
-            filtered = filtered.filter((product) => product.category === filters.category);
+            filtered = filtered.filter(product => 
+                product.category?.toLowerCase() === filters.category.toLowerCase()
+            );
         }
 
         if (filters.minPrice) {
-            filtered = filtered.filter((product) => product.price >= parseFloat(filters.minPrice));
+            const minPrice = parseFloat(filters.minPrice);
+            filtered = filtered.filter(product => 
+                !isNaN(minPrice) && product.price >= minPrice
+            );
         }
 
         if (filters.maxPrice) {
-            filtered = filtered.filter((product) => product.price <= parseFloat(filters.maxPrice));
+            const maxPrice = parseFloat(filters.maxPrice);
+            filtered = filtered.filter(product => 
+                !isNaN(maxPrice) && product.price <= maxPrice
+            );
         }
 
         if (filters.minRating) {
@@ -49,6 +67,7 @@ const MenuPage = () => {
         }
 
         setFilteredProducts(filtered);
+        setCurrentPage(1); // Reset to first page
     }, [filters, products]);
 
     // Pagination logic
@@ -87,7 +106,7 @@ const MenuPage = () => {
                     <Button
                         variant="contained"
                         color= "info"
-                        onClick={toggleFilters}
+                        onClick={() => setShowFilters(!showFilters)}
                         sx={{ position: "fixed", right: "50px", top: "160px", zIndex: 50 }}
                     >
                         {showFilters ? "Close Filter" : "Filter Products"}
@@ -100,7 +119,7 @@ const MenuPage = () => {
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold">Filter Products</h2>
                             <CloseIcon
-                                onClick={toggleFilters}
+                                onClick={() => setShowFilters(false)}
                                 className="cursor-pointer text-gray-600"
                             />
                         </div>
@@ -113,10 +132,11 @@ const MenuPage = () => {
                                     onChange={handleFilterChange}
                                     label="Category"
                                 >
-                                    <MenuItem value="All">All</MenuItem>
-                                    <MenuItem value="Beverages">Beverages</MenuItem>
-                                    <MenuItem value="Snacks">Snacks</MenuItem>
-                                    <MenuItem value="Desserts">Desserts</MenuItem>
+                                    {categories.map(category => (
+                                        <MenuItem key={category} value={category}>
+                                            {category}
+                                        </MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                             <TextField
