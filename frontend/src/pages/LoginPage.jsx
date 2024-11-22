@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader } from "lucide-react"; 
+import Input from "../components/Input";
 import { useAuthStore } from "../store/authStore";
 import SNSImage from '../assets/img/SNS.png';
 import { motion } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import toast, { Toaster } from 'react-hot-toast';
 
 const LoginPage = () => {
     const { login, isLoading, error } = useAuthStore();
@@ -16,10 +16,7 @@ const LoginPage = () => {
     const handleLogin = async (values) => {
         const success = await login(values.email, values.password);
         if (success) {
-            toast.success('Login successfully!');
             navigate('/home');
-        } else {
-            toast.error('Login failed. Please check your credentials.');
         }
     };
 
@@ -34,7 +31,6 @@ const LoginPage = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Toaster />
             <div className="flex items-center justify-center flex-grow bg-gradient-to-r from-[#e9e6de] to-[#0c3a6d]">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
