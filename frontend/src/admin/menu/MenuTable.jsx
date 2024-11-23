@@ -5,11 +5,11 @@ import { Button, IconButton, Dialog, DialogContent, Typography, Box, CardMedia, 
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+// import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+// import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AddDrinks from './AddDrinks';
 import EditDrinks from './EditDrinks';
-import Carousel from 'react-material-ui-carousel';
+// import Carousel from 'react-material-ui-carousel';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import useProductStore from "../../store/productStore";
 
@@ -185,7 +185,7 @@ const MenuTable = () => {
           </Typography>
           <Typography variant="body1">ID: {row.id}</Typography>
           <Typography variant="body1">Origin: {row.origin}</Typography>
-          <Typography variant="body1">Price: ${row.price}</Typography>
+          <Typography variant="body1">Price: ₱{row.price}</Typography>
           <Typography variant="body1">Stocks: {row.stocks}</Typography>
           <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
             Description: {row.description}
@@ -287,17 +287,19 @@ const MenuTable = () => {
           }}
         />
 
-        {openImageDialog && (
-          <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)}>
-            <DialogContent>
-              <Carousel>
-                {currentImages.map((image, index) => (
-                  <img key={index} src={image} alt={`Drink Image ${index}`} style={{ width: '100%' }} />
-                ))}
-              </Carousel>
-            </DialogContent>
-          </Dialog>
-        )}
+{openImageDialog && (
+  <Dialog open={openImageDialog} onClose={() => setOpenImageDialog(false)}>
+    <DialogContent>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+        {currentImages.map((image, index) => (
+          <div key={index} style={{ border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden' }}>
+            <img src={image} alt={`Drink Image ${index}`} style={{ width: '100%', height: 'auto' }} />
+          </div>
+        ))}
+      </div>
+    </DialogContent>
+  </Dialog>
+)}
 
         {openAddModal && (
           <AddDrinks
