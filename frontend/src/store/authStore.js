@@ -124,4 +124,20 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+
+	facebookLogin: async (accessToken) => {
+		set({ isLoading: true, error: null });
+		try {
+		  const response = await axios.post(`${API_URL}/facebook`, { accessToken });
+		  set({
+			user: response.data.user,
+			isAuthenticated: true,
+			role: response.data.user.role,
+			isLoading: false,
+		  });
+		} catch (error) {
+		  set({ error: error.response?.data?.message || "Error logging in with Facebook", isLoading: false });
+		  throw error;
+		}
+	  },
 }));

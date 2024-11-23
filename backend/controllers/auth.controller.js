@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import { Profile } from "../models/profile.model.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+import jwt from 'jsonwebtoken';
 // import admin from "../utils/firebase.js";
 import { generateTokenandSetCookie } from "../utils/generateTokenandSetCookie.js";
 import { sendVerificationEmail, SendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
@@ -207,3 +208,65 @@ export const checkAuth = async (req, res) => {
         
     }
 }
+export const facebookLogin = async (req, res) => {
+    const { accessToken } = req.body;
+
+    try {
+        const response = await fetch(`https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email`);
+        const profile = await response.json();
+
+        if (!profile.id) {
+            return res.status(400).json({ success: false, message: 'Invalid Facebook token' });
+        }
+
+        let user = await User.findOne({ facebookId: profile.id });
+
+        if (!user) {
+            // Check if a user with the same email already exists
+            user = await User.findOne({ email: profile.email });
+
+            if (user) {
+                // Update the existing user with the facebookId
+                user.facebookId = profile.id;
+                user.isVerified = true;
+                await user.save();
+            } else {
+                // Generate a random password
+                const randomPassword = crypto.randomBytes(16).toString('hex');
+
+                // Create a new user
+                user = new User({
+                    facebookId: profile.id,
+                    email: profile.email,
+                    name: profile.name,
+                    password: randomPassword, // Set the random password
+                    isVerified: true,
+                });
+                await user.save();
+            }
+        }
+
+        // Ensure profile is created and not duplicated
+        let userProfile = await Profile.findOne({ user: user._id });
+        if (!userProfile) {
+            const [firstName, lastName] = user.name.split(' ');
+            userProfile = new Profile({
+                user: user._id,
+                firstName: firstName || user.name,
+                lastName: lastName || '',
+                contactNo: '',
+                address: '',
+                profileImage: { url: '', publicId: '' },
+            });
+            await userProfile.save();
+        }
+
+        // Use your custom method to generate the token and set the cookie
+        generateTokenandSetCookie(res, user._id);
+
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error('Facebook login error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};

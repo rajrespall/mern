@@ -13,7 +13,6 @@ const ProfileSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: true
   },
   contactNo: {
     type: String,

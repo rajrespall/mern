@@ -7,6 +7,7 @@ import SNSImage from '../assets/img/SNS.png';
 import { motion } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import FacebookLoginButton from '../components/FacebookLoginButton';
 
 const LoginPage = () => {
     const { login, isLoading, error } = useAuthStore();
@@ -106,6 +107,8 @@ const LoginPage = () => {
                         <button className="bg-white border py-2 w-full rounded-xl mt-5 flex justify-center items-center text-sm hover:scale-105 duration-300 text-[#002D74]">
                             Login with Google
                         </button>
+
+                        <FacebookLoginButton />
 
                         <div className="mt-5 text-xs border-b border-[#002D74] py-4 text-[#002D74]">
                             <Link to="/forgot-password">Forgot your password?</Link>
