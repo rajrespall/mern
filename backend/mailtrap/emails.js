@@ -1,5 +1,5 @@
 import { mailtrapClient, sender, transporter } from "./mailtrap.config.js";
-import { PASSWORD_RESET_REQUEST_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE} from "./emailTemplates.js";
+import { PASSWORD_RESET_REQUEST_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, ORDER_STATUS_UPDATE_TEMPLATE} from "./emailTemplates.js";
 
 export const sendVerificationEmail = async (email, verificationToken) => {
     const mailOptions = {
@@ -90,3 +90,32 @@ export const sendResetSuccessEmail = async (email) => {
         throw new Error('Error sending password reset email: ', error);
       }
 }
+
+export const sendOrderStatusEmail = async (email, orderDetails) => {
+  let orderItemsHtml = orderDetails.orderItems.map(item => `
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ddd;">${item.product.name}</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">${item.quantity}</td>
+      <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">$${item.product.price.toFixed(2)}</td>
+    </tr>
+  `).join('');
+
+  const mailOptions = {
+    from: '"Your App" <no-reply@yourapp.com>',
+    to: email,
+    subject: `Order Status Update - ${orderDetails.orderStatus}`,
+    html: ORDER_STATUS_UPDATE_TEMPLATE
+      .replace('{orderId}', orderDetails._id)
+      .replace('{orderStatus}', orderDetails.orderStatus.toLowerCase())
+      .replace('{orderItems}', orderItemsHtml)
+      .replace('{totalPrice}', orderDetails.totalPrice.toFixed(2))
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Status update email sent: ' + info.response);
+  } catch (error) {
+    console.error('Error sending status update email:', error);
+    throw new Error('Error sending status update email');
+  }
+};

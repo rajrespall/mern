@@ -1,5 +1,6 @@
 import { Order } from '../models/order.model.js';
 import { Cart } from '../models/cart.model.js';
+import { sendOrderStatusEmail } from '../mailtrap/emails.js';
 
 // Create a new order from the cart
 export const checkout = async (req, res) => {
@@ -59,7 +60,16 @@ export const updateOrderStatus = async (req, res) => {
     const { orderStatus } = req.body; 
     try {
         // Fetch the order by ID
-        const order = await Order.findById(id);
+        const order = await Order.findById(id)
+            .populate({
+                path: 'user',
+                select: 'name email'
+            })
+            .populate({
+                path: 'orderItems.product',
+                select: 'name price'
+            });
+
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
@@ -67,6 +77,16 @@ export const updateOrderStatus = async (req, res) => {
         // Update the order status
         order.orderStatus = orderStatus;
         await order.save();
+
+        try {
+            // Only send email for Delivered status
+            if (orderStatus === 'Delivered' && order.user && order.user.email) {
+                await sendOrderStatusEmail(order.user.email, order);
+            }
+        } catch (emailError) {
+            console.error('Error sending order status email:', emailError);
+            // Continue execution even if email fails
+        }
 
         res.status(200).json({ message: 'Order status updated', order });
     } catch (error) {
