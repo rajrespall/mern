@@ -90,7 +90,7 @@ const Navbar = () => {
           <RouterLink to="/cart" className="hover:text-blue-200 transition-all cursor-pointer">
             <AiOutlineShoppingCart size={30} />
           </RouterLink>
-          <AiOutlineSearch size={30} className="cursor-pointer hover:text-blue-200" onClick={toggleSearchBar} />
+          {/* <AiOutlineSearch size={30} className="cursor-pointer hover:text-blue-200" onClick={toggleSearchBar} /> */}
 
           {/* Profile Picture Icon with Dropdown */}
           
@@ -139,7 +139,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search Bar
       {isSearchOpen && (
         <div className="flex justify-center mt-2">
           <form onSubmit={handleSearchSubmit} className="flex items-center">
@@ -153,7 +153,7 @@ const Navbar = () => {
             <button type="submit" className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Search</button>
           </form>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

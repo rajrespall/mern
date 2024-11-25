@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
+import { ArrowLeft, Mail } from "lucide-react";
+import SNSImage from '../assets/img/SNS.png'; // Assuming you want to keep a similar illustration
 
 const EmailVerificationPage = () => {
 	const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -63,46 +65,60 @@ const EmailVerificationPage = () => {
 	}, [code]);
 
 	return (
-		<div className='max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'>
-			<motion.div
-				initial={{ opacity: 0, y: -50 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5 }}
-				className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md'
-			>
-				<h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text'>
-					Verify Your Email
-				</h2>
-				<p className='text-center text-gray-300 mb-6'>Enter the 6-digit code sent to your email address.</p>
+		<div className="flex flex-col min-h-screen">
+            <div className="flex items-center justify-center flex-grow bg-gradient-to-r from-[#e9e6de] to-[#0c3a6d]">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center"
+                >
+                    <div className="md:w-1/2 px-8 md:px-16">
+                        <h2 className="font-bold text-2xl text-[#002D74] text-center">Verify Your Email</h2>
+                        <p className='text-xs mt-4 text-[#002D74] text-center'>
+                            Enter the 6-digit code sent to your email address.
+                        </p>
 
-				<form onSubmit={handleSubmit} className='space-y-6'>
-					<div className='flex justify-between'>
-						{code.map((digit, index) => (
-							<input
-								key={index}
-								ref={(el) => (inputRefs.current[index] = el)}
-								type='text'
-								maxLength='6'
-								value={digit}
-								onChange={(e) => handleChange(index, e.target.value)}
-								onKeyDown={(e) => handleKeyDown(index, e)}
-								className='w-12 h-12 text-center text-2xl font-bold bg-gray-700 text-white border-2 border-gray-600 rounded-lg focus:border-green-500 focus:outline-none'
-							/>
-						))}
-					</div>
-					{error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
-					<motion.button
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
-						type='submit'
-						disabled={isLoading || code.some((digit) => !digit)}
-						className='w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 disabled:opacity-50'
-					>
-						{isLoading ? "Verifying..." : "Verify Email"}
-					</motion.button>
-				</form>
-			</motion.div>
-		</div>
-	);
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                            <div className='flex justify-between'>
+                                {code.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={(el) => (inputRefs.current[index] = el)}
+                                        type='text'
+                                        maxLength='6'
+                                        value={digit}
+                                        onChange={(e) => handleChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        className='w-12 h-12 text-center text-2xl font-bold bg-gray-700 text-white border-2 border-gray-600 rounded-lg focus:border-green-500 focus:outline-none'
+                                    />
+                                ))}
+                            </div>
+                            {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className='w-full py-2 bg-[#002D74] text-white font-bold rounded-xl hover:scale-105 duration-300'
+                                type='submit'
+                                disabled={isLoading || code.some((digit) => !digit)}
+                            >
+                                {isLoading ? "Verifying..." : "Verify Email"}
+                            </motion.button>
+                        </form>
+
+                        <div className='flex justify-center py-4'>
+                            <Link to={"/login"} className='text-sm text-[#002D74] hover:underline flex items-center'>
+                                <ArrowLeft className='h-4 w-4 mr-2' /> Back to Login
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="md:block hidden w-1/2">
+                        <img className="rounded-2xl" src={SNSImage} alt="Email Verification Illustration" />
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+    );
 };
 export default EmailVerificationPage;
