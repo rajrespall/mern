@@ -5,7 +5,8 @@
   "main": "backend/server.js",
   "scripts": {
     "dev": "nodemon backend/server.js",
-    "seed": "node backend/utils/seeder.js"
+    "seed": "node backend/utils/seeder.js",
+    "seed:orders": "node backend/data/orderSeeder.js"
   },
   "keywords": [],
   "author": "",
